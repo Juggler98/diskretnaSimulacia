@@ -267,6 +267,7 @@ public class GUI extends JFrame {
             }
             String text = String.format("---Simulacia c. %d---\nn: %d\nPocet iteracii: %d\nStrategia: %d %s\nVysledok: %f\n\n", simulationCount, n, realIterationCount, strategia, strategiaStr, result);
             jTextAreaResults.append(text);
+            //jTextAreaResults.setCaretPosition(jTextAreaResults.getDocument().getLength());
             run = false;
             final Histogram histogram = new Histogram("Simulacia c. " + simulationCount);
             histogram.pack();
