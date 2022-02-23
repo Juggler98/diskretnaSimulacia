@@ -15,5 +15,4 @@ public class MyApplicationFrame extends ApplicationFrame {
         }
     }
 
-
 }

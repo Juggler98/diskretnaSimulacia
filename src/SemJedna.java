@@ -56,7 +56,6 @@ public class SemJedna {
                 return i + 1;
             }
         }
-
         return 3 * n;
     }
 

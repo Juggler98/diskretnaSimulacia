@@ -64,7 +64,7 @@ public class GUI extends JFrame {
         pocetOpakovani.setToolTipText("Pocet opakovani");
         medzera.setToolTipText("Zobraz kazdy (p) vysledok");
         n.setToolTipText("n");
-        pocetOpakovani.setText("10000");
+        pocetOpakovani.setText("10000000");
         medzera.setText("1000");
         n.setText("50");
 

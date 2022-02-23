@@ -8,7 +8,6 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -95,13 +94,13 @@ public class LineChart extends MyApplicationFrame {
 
 
     public void addPoint(int iteration, double point) {
-        if (point > max) {
-            max = point;
-        }
-        if (point < min) {
-            min = point;
-        }
         if (this.iteration < 20000) {
+            if (point > max) {
+                max = point;
+            }
+            if (point < min) {
+                min = point;
+            }
             if (max > min) {
                 chart.getXYPlot().getRangeAxis().setRange(min - 1, max + 1);
             }
