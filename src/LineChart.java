@@ -102,7 +102,7 @@ public class LineChart extends MyApplicationFrame {
                 min = point;
             }
             if (max > min) {
-                chart.getXYPlot().getRangeAxis().setRange(min - 1, max + 1);
+                chart.getXYPlot().getRangeAxis().setRange(min, max);
             }
         }
         this.series.add(iteration, point);

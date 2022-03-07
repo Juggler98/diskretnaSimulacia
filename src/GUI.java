@@ -14,12 +14,21 @@ public class GUI extends JFrame {
     private boolean run = false;
     private boolean showMedzivysledky = false;
     private double result;
+    private int hodnota = 0;
+    private LineChart lineChart;
+
+    private int realIterationCount = 1;
+    private LinkedList<Integer> hodnoty = new LinkedList<>();
+    private int min = Integer.MAX_VALUE;
+    private int max = Integer.MIN_VALUE;
 
     private final JTextArea jTextArea;
     private final JTextArea jTextAreaResults;
     private final JLabel resultLabel;
 
     private Thread t1;
+
+    ParkingSimulation parkingSimulation;
 
     public GUI() {
         super("Semestralka 1");
@@ -89,12 +98,17 @@ public class GUI extends JFrame {
                 }
                 run = true;
                 simulationCount++;
+                parkingSimulation = new ParkingSimulation(this.n, strategia, this);
                 t1 = new Thread(new RunnableImpl());
                 t1.start();
             }
         });
 
-        stop.addActionListener(e -> run = false);
+        stop.addActionListener(e -> {
+            run = false;
+            if (parkingSimulation != null)
+                parkingSimulation.stop();
+        });
         medzera.addActionListener(e -> this.gap = Integer.parseInt(medzera.getText()));
         pocetOpakovani.addActionListener(e -> this.iterationCount = Integer.parseInt(pocetOpakovani.getText()));
 
@@ -207,72 +221,76 @@ public class GUI extends JFrame {
         this.setVisible(true);
     }
 
+    public void prepare() {
+        lineChart = new LineChart("Simulacia c. " + simulationCount);
+        lineChart.pack();
+        lineChart.setVisible(true);
+
+        jTextArea.setText("");
+        resultLabel.setText("");
+
+        hodnota = 0;
+        realIterationCount = 1;
+        hodnoty = new LinkedList<>();
+        min = Integer.MAX_VALUE;
+        max = Integer.MIN_VALUE;
+    }
+
+    public void calculate(int medziVysledok, int iteration) {
+        hodnota += medziVysledok;
+        result = hodnota * 1.0 / iteration;
+
+        if (hodnoty.size() <= 1000000) {
+            hodnoty.add(medziVysledok);
+            if (medziVysledok > max) {
+                max = medziVysledok;
+            }
+            if (medziVysledok < min) {
+                min = medziVysledok;
+            }
+        }
+
+        if (showMedzivysledky)
+            jTextArea.append(medziVysledok + "\n");
+
+        if (iteration % gap == 0) {
+            lineChart.addPoint(iteration, result);
+            resultLabel.setText(result + "");
+        }
+
+        if (sleepTime > 0) {
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        realIterationCount = iteration;
+    }
+
+    public void showResults() {
+        String strategiaStr = "error";
+        if (strategia == 1) {
+            strategiaStr = "(Prve volne)";
+        } else if (strategia == 2) {
+            strategiaStr = "(2*n/3)";
+        } else if (strategia == 3) {
+            strategiaStr = "(n/2)";
+        }
+        String text = String.format("---Simulacia c. %d---\nn: %d\nPocet iteracii: %d\nStrategia: %d %s\nVysledok: %f\n\n", simulationCount, n, realIterationCount, strategia, strategiaStr, result);
+        jTextAreaResults.append(text);
+        resultLabel.setText(result + "");
+        //jTextAreaResults.setCaretPosition(jTextAreaResults.getDocument().getLength());
+        run = false;
+        final Histogram histogram = new Histogram("Simulacia c. " + simulationCount);
+        histogram.pack();
+        histogram.setVisible(true);
+        histogram.addPoints(hodnoty, min, max);
+    }
+
     private class RunnableImpl implements Runnable {
-
         public void run() {
-            final LineChart lineChart = new LineChart("Simulacia c. " + simulationCount);
-            lineChart.pack();
-            lineChart.setVisible(true);
-
-            jTextArea.setText("");
-
-            SemJedna semJedna = new SemJedna(n, strategia);
-            int hodnota = 0;
-            int realIterationCount = 1;
-            LinkedList<Integer> hodnoty = new LinkedList<>();
-            int min = Integer.MAX_VALUE;
-            int max = Integer.MIN_VALUE;
-            for (int i = 1; i <= iterationCount; i++) {
-                int medziVysledok = semJedna.run();
-                hodnota += medziVysledok;
-                result = hodnota * 1.0 / i;
-
-                if (hodnoty.size() <= 1000000) {
-                    hodnoty.add(medziVysledok);
-                    if (medziVysledok > max) {
-                        max = medziVysledok;
-                    }
-                    if (medziVysledok < min) {
-                        min = medziVysledok;
-                    }
-                }
-
-                if (showMedzivysledky)
-                    jTextArea.append(medziVysledok + "\n");
-
-                if (i % gap == 0 || i == 1) {
-                    lineChart.addPoint(i, result);
-                    resultLabel.setText(result + "");
-                }
-
-                if (sleepTime > 0) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                realIterationCount = i;
-
-                if (!run) break;
-            }
-            String strategiaStr = "error";
-            if (strategia == 1) {
-                strategiaStr = "(Prve volne)";
-            } else if (strategia == 2) {
-                strategiaStr = "(2*n/3)";
-            } else if (strategia == 3) {
-                strategiaStr = "(n/2)";
-            }
-            String text = String.format("---Simulacia c. %d---\nn: %d\nPocet iteracii: %d\nStrategia: %d %s\nVysledok: %f\n\n", simulationCount, n, realIterationCount, strategia, strategiaStr, result);
-            jTextAreaResults.append(text);
-            //jTextAreaResults.setCaretPosition(jTextAreaResults.getDocument().getLength());
-            run = false;
-            final Histogram histogram = new Histogram("Simulacia c. " + simulationCount);
-            histogram.pack();
-            histogram.setVisible(true);
-            histogram.addPoints(hodnoty, min, max);
+            parkingSimulation.simulate(iterationCount);
         }
     }
 
