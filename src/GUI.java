@@ -10,11 +10,13 @@ public class GUI extends JFrame {
     private int gap = 1;
     private int n = 10;
     private int strategia = 1;
+    private int gapPercentStart = 0;
     private boolean run = false;
     private boolean showMedzivysledky = false;
     private double result;
-    private int hodnota = 0;
+    private long hodnota = 0;
     private LineChart lineChart;
+    private String strategiaStr;
 
     private int realIterationCount = 1;
     private int[] histogramHodnoty;
@@ -49,6 +51,7 @@ public class GUI extends JFrame {
         JButton stop = new JButton("Stop");
         JTextField pocetOpakovani = new JTextField();
         JTextField medzera = new JTextField();
+        JTextField medzeraNaZaciatku = new JTextField();
         JTextField n = new JTextField();
         JSlider spomalenie = new JSlider(0, 100);
         JRadioButton strategia1 = new JRadioButton("Prve volne");
@@ -71,10 +74,12 @@ public class GUI extends JFrame {
 
         pocetOpakovani.setToolTipText("Pocet opakovani");
         medzera.setToolTipText("Zobraz kazdy (p) vysledok");
+        medzeraNaZaciatku.setToolTipText("Preskoc prvych (q%) vysledkov");
         n.setToolTipText("n");
         pocetOpakovani.setText("10000000");
         medzera.setText("1000");
-        n.setText("50");
+        medzeraNaZaciatku.setText("10");
+        n.setText("33");
 
         spomalenie.setMajorTickSpacing(10);
         spomalenie.setMinorTickSpacing(1);
@@ -86,6 +91,7 @@ public class GUI extends JFrame {
         start.addActionListener(e -> {
             if (!run) {
                 this.gap = Integer.parseInt(medzera.getText());
+                this.gapPercentStart = Integer.parseInt(medzeraNaZaciatku.getText());
                 this.iterationCount = Integer.parseInt(pocetOpakovani.getText());
                 this.n = Integer.parseInt(n.getText());
                 if (strategia1.isSelected()) {
@@ -109,6 +115,7 @@ public class GUI extends JFrame {
                 parkingSimulation.stop();
         });
         medzera.addActionListener(e -> this.gap = Integer.parseInt(medzera.getText()));
+        medzeraNaZaciatku.addActionListener(e -> this.gapPercentStart = Integer.parseInt(medzeraNaZaciatku.getText()));
         pocetOpakovani.addActionListener(e -> this.iterationCount = Integer.parseInt(pocetOpakovani.getText()));
 
         spomalenie.addChangeListener(e -> {
@@ -181,7 +188,8 @@ public class GUI extends JFrame {
         stop.setBounds(130, space + buttonHeight, buttonWidth, buttonHeight);
         n.setBounds(space, space, 120, buttonHeight);
         pocetOpakovani.setBounds(space, space + buttonHeight, 120, buttonHeight);
-        medzera.setBounds(space, space + buttonHeight * 2, 120, buttonHeight);
+        medzera.setBounds(space, space + buttonHeight * 2, 80, buttonHeight);
+        medzeraNaZaciatku.setBounds(space + 80, space + buttonHeight * 2, 40, buttonHeight);
         spomalenie.setBounds(2, space + buttonHeight * 4, 660, buttonHeight * 2);
         strategia1.setBounds(space, space + buttonHeight * 3, buttonWidth + 20, buttonHeight);
         strategia2.setBounds(space + buttonWidth + 20, space + buttonHeight * 3, buttonWidth - 10, buttonHeight);
@@ -194,6 +202,7 @@ public class GUI extends JFrame {
 
         panel.add(pocetOpakovani);
         panel.add(medzera);
+        panel.add(medzeraNaZaciatku);
         panel.add(start);
         panel.add(stop);
         panel.add(spomalenie);
@@ -221,7 +230,15 @@ public class GUI extends JFrame {
     }
 
     public void prepare(int n) {
-        lineChart = new LineChart("Simulacia c. " + simulationCount);
+        strategiaStr = "error";
+        if (strategia == 1) {
+            strategiaStr = "Prve volne";
+        } else if (strategia == 2) {
+            strategiaStr = "2*n/3";
+        } else if (strategia == 3) {
+            strategiaStr = "n/2";
+        }
+        lineChart = new LineChart("Simulacia c. " + simulationCount + " - Strategia " + "\"" + strategiaStr + "\"");
         lineChart.pack();
         lineChart.setVisible(true);
 
@@ -252,10 +269,13 @@ public class GUI extends JFrame {
         if (showMedzivysledky)
             jTextArea.append(medziVysledok + "\n");
 
-        if (iteration % gap == 0) {
-            lineChart.addPoint(iteration, result);
-            resultLabel.setText(result + "");
+        if (iteration >= iterationCount / 100.0 * gapPercentStart) {
+            if (iteration % gap == 0) {
+                lineChart.addPoint(iteration, result);
+            }
         }
+
+        resultLabel.setText(result + "");
 
         if (sleepTime > 0) {
             try {
@@ -268,20 +288,12 @@ public class GUI extends JFrame {
     }
 
     public void showResults() {
-        String strategiaStr = "error";
-        if (strategia == 1) {
-            strategiaStr = "(Prve volne)";
-        } else if (strategia == 2) {
-            strategiaStr = "(2*n/3)";
-        } else if (strategia == 3) {
-            strategiaStr = "(n/2)";
-        }
-        String text = String.format("---Simulacia c. %d---\nn: %d\nPocet iteracii: %d\nStrategia: %d %s\nVysledok: %f\n\n", simulationCount, n, realIterationCount, strategia, strategiaStr, result);
+        String text = String.format("---Simulacia c. %d---\nn: %d\nPocet iteracii: %d\nStrategia: %d (%s)\nVysledok: %f\n\n", simulationCount, n, realIterationCount, strategia, strategiaStr, result);
         jTextAreaResults.append(text);
         resultLabel.setText(result + "");
         //jTextAreaResults.setCaretPosition(jTextAreaResults.getDocument().getLength());
         run = false;
-        final Histogram histogram = new Histogram("Simulacia c. " + simulationCount, histogramHodnoty, min, max);
+        final Histogram histogram = new Histogram("Simulacia c. " + simulationCount + " - Strategia " + "\"" + strategiaStr + "\"", histogramHodnoty, min, max);
         histogram.pack();
         histogram.setVisible(true);
     }

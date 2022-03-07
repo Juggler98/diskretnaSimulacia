@@ -25,9 +25,9 @@ public class LineChart extends MyApplicationFrame {
 
     public LineChart(String title) {
 
-        super("Semestralka 1");
+        super(title);
 
-        this.series = new XYSeries("Semestralka 1");
+        this.series = new XYSeries(title);
         this.title = title;
 
         final XYSeriesCollection dataset = new XYSeriesCollection(this.series);
@@ -81,7 +81,7 @@ public class LineChart extends MyApplicationFrame {
     }
 
     public void addPoint(int iteration, double point) {
-        if (this.iteration < 50000) {
+        if (this.iteration < 100000) {
             if (point > max) {
                 max = point;
             }
@@ -89,7 +89,7 @@ public class LineChart extends MyApplicationFrame {
                 min = point;
             }
             if (max > min) {
-                chart.getXYPlot().getRangeAxis().setRange(min - 0.01, max + 0.01);
+                chart.getXYPlot().getRangeAxis().setRange(min, max);
             }
         }
         this.series.add(iteration, point);

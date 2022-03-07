@@ -18,7 +18,7 @@ public class Histogram extends MyApplicationFrame {
     private final int n;
 
     public Histogram(String title, int[] hodnoty, int min, int max) {
-        super("Semestralka 1");
+        super(title);
         this.title = title;
         this.n = hodnoty.length;
 
