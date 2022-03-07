@@ -21,7 +21,7 @@ public class ParkingSimulation extends MonteCarlo {
 
     @Override
     public void beforeReplications() {
-        gui.prepare();
+        gui.prepare(n);
         randoms = new Random[n];
         for (int i = 0; i < n; i++) {
             randoms[i] = new Random(randomSeed.nextInt());

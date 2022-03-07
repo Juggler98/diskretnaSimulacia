@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.util.LinkedList;
 
 public class GUI extends JFrame {
 
@@ -18,7 +17,7 @@ public class GUI extends JFrame {
     private LineChart lineChart;
 
     private int realIterationCount = 1;
-    private LinkedList<Integer> hodnoty = new LinkedList<>();
+    private int[] histogramHodnoty;
     private int min = Integer.MAX_VALUE;
     private int max = Integer.MIN_VALUE;
 
@@ -221,7 +220,7 @@ public class GUI extends JFrame {
         this.setVisible(true);
     }
 
-    public void prepare() {
+    public void prepare(int n) {
         lineChart = new LineChart("Simulacia c. " + simulationCount);
         lineChart.pack();
         lineChart.setVisible(true);
@@ -231,7 +230,7 @@ public class GUI extends JFrame {
 
         hodnota = 0;
         realIterationCount = 1;
-        hodnoty = new LinkedList<>();
+        histogramHodnoty = new int[n + 1];
         min = Integer.MAX_VALUE;
         max = Integer.MIN_VALUE;
     }
@@ -240,14 +239,14 @@ public class GUI extends JFrame {
         hodnota += medziVysledok;
         result = hodnota * 1.0 / iteration;
 
-        if (hodnoty.size() <= 1000000) {
-            hodnoty.add(medziVysledok);
-            if (medziVysledok > max) {
-                max = medziVysledok;
-            }
-            if (medziVysledok < min) {
-                min = medziVysledok;
-            }
+        if (medziVysledok > histogramHodnoty.length) {
+            histogramHodnoty[0]++;
+        } else {
+            histogramHodnoty[medziVysledok]++;
+        }
+
+        if (medziVysledok > max && medziVysledok < 3 * n) {
+            max = medziVysledok;
         }
 
         if (showMedzivysledky)
@@ -282,10 +281,9 @@ public class GUI extends JFrame {
         resultLabel.setText(result + "");
         //jTextAreaResults.setCaretPosition(jTextAreaResults.getDocument().getLength());
         run = false;
-        final Histogram histogram = new Histogram("Simulacia c. " + simulationCount);
+        final Histogram histogram = new Histogram("Simulacia c. " + simulationCount, histogramHodnoty, min, max);
         histogram.pack();
         histogram.setVisible(true);
-        histogram.addPoints(hodnoty, min, max);
     }
 
     private class RunnableImpl implements Runnable {
@@ -293,6 +291,5 @@ public class GUI extends JFrame {
             parkingSimulation.simulate(iterationCount);
         }
     }
-
 
 }

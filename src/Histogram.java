@@ -1,28 +1,34 @@
 import java.awt.*;
-import java.util.LinkedList;
 
 import javax.swing.*;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.data.statistics.HistogramDataset;
-import org.jfree.data.xy.*;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 public class Histogram extends MyApplicationFrame {
 
     private final String title;
+    private final int n;
 
-    final HistogramDataset dataset;
-
-    public Histogram(String title) {
+    public Histogram(String title, int[] hodnoty, int min, int max) {
         super("Semestralka 1");
         this.title = title;
-        dataset = new HistogramDataset();
+        this.n = hodnoty.length;
+
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        for (int i = 0; i <= max; i++) {
+            dataset.setValue(hodnoty[i], "", i + "");
+        }
         JFreeChart chart = createChart(dataset);
+
         chart.setBackgroundPaint(Color.LIGHT_GRAY);
         final JPanel content = new JPanel(new BorderLayout());
         final ChartPanel chartPanel = new ChartPanel(chart);
@@ -33,7 +39,6 @@ public class Histogram extends MyApplicationFrame {
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(config);
 
         int height = bounds.height < 800 ? bounds.height - 360 - 50 - bounds.y - insets.top - insets.bottom : 500;
-
         chartPanel.setPreferredSize(new java.awt.Dimension(684, height));
 
         int x = bounds.x + bounds.width - insets.right - chartPanel.getPreferredSize().width - 16;
@@ -43,8 +48,8 @@ public class Histogram extends MyApplicationFrame {
         setContentPane(content);
     }
 
-    private JFreeChart createChart(final IntervalXYDataset dataset) {
-        final JFreeChart result = ChartFactory.createHistogram(
+    private JFreeChart createChart(final DefaultCategoryDataset dataset) {
+        final JFreeChart result = ChartFactory.createStackedBarChart(
                 title,
                 "Value",
                 "Count",
@@ -55,7 +60,12 @@ public class Histogram extends MyApplicationFrame {
                 false
         );
 
-        final XYPlot plot = result.getXYPlot();
+        final CategoryPlot plot = result.getCategoryPlot();
+
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        for (int i = 0; i < n; i++) {
+            renderer.setSeriesPaint(i, Color.red);
+        }
 
         plot.setBackgroundPaint(new Color(0xffffe0));
         plot.setDomainGridlinesVisible(true);
@@ -63,22 +73,16 @@ public class Histogram extends MyApplicationFrame {
         plot.setRangeGridlinesVisible(true);
         plot.setRangeGridlinePaint(Color.lightGray);
 
-        ValueAxis xaxis = plot.getDomainAxis();
-        ValueAxis yaxis = plot.getRangeAxis();
+        CategoryAxis xaxis = plot.getDomainAxis();
 
-        xaxis.setAutoRange(true);
+        xaxis.setCategoryMargin(0);
+        xaxis.setLowerMargin(0.02);
+        xaxis.setUpperMargin(0.02);
+
+        ValueAxis yaxis = plot.getRangeAxis();
         yaxis.setAutoRange(true);
 
         return result;
-    }
-
-    public void addPoints(LinkedList<Integer> hodnoty, int min, int max) {
-        double[] values = new double[hodnoty.size()];
-        int index = 0;
-        for (Integer i : hodnoty) {
-            values[index++] = i;
-        }
-        dataset.addSeries("key", values, (max - min) / 2 + 20);
     }
 
 }  

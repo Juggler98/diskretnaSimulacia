@@ -12,17 +12,16 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-
 public class LineChart extends MyApplicationFrame {
 
     private final XYSeries series;
     private final JFreeChart chart;
-    private int iteration = 0;
+    private final String title;
 
     private double max = Integer.MIN_VALUE;
     private double min = Integer.MAX_VALUE;
 
-    private final String title;
+    private int iteration = 0;
 
     public LineChart(String title) {
 
@@ -33,17 +32,9 @@ public class LineChart extends MyApplicationFrame {
 
         final XYSeriesCollection dataset = new XYSeriesCollection(this.series);
         chart = createChart(dataset);
-
-        //Sets background color of chart
         chart.setBackgroundPaint(Color.LIGHT_GRAY);
-
-        //Created JPanel to show graph on screen
         final JPanel content = new JPanel(new BorderLayout());
-
-        //Created Chartpanel for chart area
         final ChartPanel chartPanel = new ChartPanel(chart);
-
-        //Added chartpanel to main panel
         content.add(chartPanel);
 
         GraphicsConfiguration config = this.getGraphicsConfiguration();
@@ -51,16 +42,13 @@ public class LineChart extends MyApplicationFrame {
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(config);
 
         int height = bounds.height < 800 ? bounds.height - 100 - bounds.y - insets.top - insets.bottom : 720;
-
-        //Sets the size of whole window (JPanel)
         chartPanel.setPreferredSize(new java.awt.Dimension(bounds.width - 700 - 10 - insets.left - insets.right, height));
-
-        //Puts the whole content on a Frame
-        setContentPane(content);
 
         int x = bounds.x + insets.left;
         int y = bounds.y + insets.top + 2;
         setLocation(x, y);
+
+        setContentPane(content);
     }
 
     private JFreeChart createChart(final XYDataset dataset) {
@@ -92,9 +80,8 @@ public class LineChart extends MyApplicationFrame {
         return result;
     }
 
-
     public void addPoint(int iteration, double point) {
-        if (this.iteration < 20000) {
+        if (this.iteration < 50000) {
             if (point > max) {
                 max = point;
             }
@@ -102,7 +89,7 @@ public class LineChart extends MyApplicationFrame {
                 min = point;
             }
             if (max > min) {
-                chart.getXYPlot().getRangeAxis().setRange(min, max);
+                chart.getXYPlot().getRangeAxis().setRange(min - 0.01, max + 0.01);
             }
         }
         this.series.add(iteration, point);
