@@ -3,8 +3,8 @@ import java.util.Random;
 
 public class ParkingSimulation extends MonteCarlo {
 
-    Random randomK = new Random();
     Random randomSeed = new Random();
+    Random randomK;
     Random[] randoms;
 
     private final int n;
@@ -23,6 +23,7 @@ public class ParkingSimulation extends MonteCarlo {
     public void beforeReplications() {
         gui.prepare(n);
         randoms = new Random[n];
+        randomK = new Random(randomSeed.nextInt());
         for (int i = 0; i < n; i++) {
             randoms[i] = new Random(randomSeed.nextInt());
         }
