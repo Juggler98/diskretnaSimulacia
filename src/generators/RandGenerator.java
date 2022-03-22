@@ -4,7 +4,7 @@ import java.util.Random;
 
 public abstract class RandGenerator {
 
-    protected Random random = new Random();
+    protected Random random;
 
     public RandGenerator() {
         random = new Random();
@@ -13,10 +13,5 @@ public abstract class RandGenerator {
     public RandGenerator(long seed) {
         random = new Random(seed);
     }
-
-    public abstract double getNextDouble();
-    public abstract int getNextInt();
-
-
 
 }

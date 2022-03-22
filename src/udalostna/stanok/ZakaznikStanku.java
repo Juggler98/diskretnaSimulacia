@@ -1,11 +1,11 @@
 package udalostna.stanok;
 
-public class Zakaznik {
+public class ZakaznikStanku {
 
     private double casPrichodu;
     private double casCakania;
 
-    public Zakaznik(double casPrichodu) {
+    public ZakaznikStanku(double casPrichodu) {
         this.casPrichodu = casPrichodu;
     }
 

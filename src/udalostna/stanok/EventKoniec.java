@@ -6,12 +6,12 @@ import udalostna.Event;
 public class EventKoniec extends Event {
 
     StanokSimulation stanokSimulation;
-    Zakaznik zakaznik;
+    ZakaznikStanku zakaznikStanku;
 
-    public EventKoniec(Zakaznik zakaznik, double time, EventCore eventCore) {
+    public EventKoniec(ZakaznikStanku zakaznikStanku, double time, EventCore eventCore) {
         super(time, eventCore);
         stanokSimulation = (StanokSimulation) eventCore;
-        this.zakaznik = zakaznik;
+        this.zakaznikStanku = zakaznikStanku;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class EventKoniec extends Event {
 //        System.out.println(zakaznik);
         if (!stanokSimulation.rad.isEmpty()) {
             EventZaciatok zaciatok = new EventZaciatok(stanokSimulation.rad.poll(), this.getTime(), stanokSimulation);
-            stanokSimulation.dlzkaRadu += zakaznik.getCasCakania() * stanokSimulation.rad.size();
+            stanokSimulation.dlzkaRadu += zakaznikStanku.getCasCakania() * stanokSimulation.rad.size();
             stanokSimulation.addToKalendar(zaciatok);
             stanokSimulation.obsluhaPrebieha = true;
         } else {

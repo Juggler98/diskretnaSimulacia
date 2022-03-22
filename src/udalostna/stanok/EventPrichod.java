@@ -6,12 +6,12 @@ import udalostna.Event;
 public class EventPrichod extends Event implements Comparable<Event> {
 
     StanokSimulation stanokSimulation;
-    Zakaznik zakaznik;
+    ZakaznikStanku zakaznikStanku;
 
-    public EventPrichod(Zakaznik zakaznik, double time, EventCore eventCore) {
+    public EventPrichod(ZakaznikStanku zakaznikStanku, double time, EventCore eventCore) {
         super(time, eventCore);
         stanokSimulation = (StanokSimulation) eventCore;
-        this.zakaznik = zakaznik;
+        this.zakaznikStanku = zakaznikStanku;
     }
 
     @Override
@@ -19,14 +19,14 @@ public class EventPrichod extends Event implements Comparable<Event> {
 //        System.out.println("Prichod: " + time);
 //        System.out.println(zakaznik);
         if (stanokSimulation.obsluhaPrebieha) {
-            stanokSimulation.rad.add(zakaznik);
+            stanokSimulation.rad.add(this.zakaznikStanku);
         } else {
-            EventZaciatok zaciatok = new EventZaciatok(zakaznik, this.getTime(), stanokSimulation);
+            EventZaciatok zaciatok = new EventZaciatok(this.zakaznikStanku, this.getTime(), stanokSimulation);
             stanokSimulation.addToKalendar(zaciatok);
             stanokSimulation.obsluhaPrebieha = true;
         }
-        Zakaznik zakaznik = new Zakaznik(this.getTime() + stanokSimulation.randPrichod.getNextDouble());
-        EventPrichod prichod = new EventPrichod(zakaznik, zakaznik.getCasPrichodu(), stanokSimulation);
+        ZakaznikStanku zakaznikStanku = new ZakaznikStanku(this.getTime() + stanokSimulation.randPrichod.nextValue());
+        EventPrichod prichod = new EventPrichod(zakaznikStanku, zakaznikStanku.getCasPrichodu(), stanokSimulation);
         stanokSimulation.addToKalendar(prichod);
     }
 

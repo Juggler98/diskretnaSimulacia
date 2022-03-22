@@ -6,13 +6,15 @@ import simCores.EventCore;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Random;
 
 public class StanokSimulation extends EventCore {
 
-    protected Queue<Zakaznik> rad = new LinkedList<>();
+    protected Queue<ZakaznikStanku> rad = new LinkedList<>();
     protected boolean obsluhaPrebieha = false;
-    protected RandExponential randPrichod = new RandExponential(240);
-    protected RandUniformContinuous randObsluha = new RandUniformContinuous(120, 240);
+    private final Random seedGenerator = new Random();
+    protected RandExponential randPrichod = new RandExponential(240, seedGenerator);
+    protected RandUniformContinuous randObsluha = new RandUniformContinuous(120, 240, seedGenerator);
 
     protected double dlzkaCakania = 0;
     protected double dlzkaRadu = 0;
@@ -43,11 +45,11 @@ public class StanokSimulation extends EventCore {
         kalendarUdalosti.clear();
         obsluhaPrebieha = false;
 
-        Zakaznik zakaznik = new Zakaznik(randPrichod.getNextDouble());
-        EventPrichod prichod = new EventPrichod(zakaznik, zakaznik.getCasPrichodu(), this);
+        ZakaznikStanku zakaznikStanku = new ZakaznikStanku(randPrichod.nextValue());
+        EventPrichod prichod = new EventPrichod(zakaznikStanku, zakaznikStanku.getCasPrichodu(), this);
         kalendarUdalosti.add(prichod);
         if (obsluhaPrebieha) {
-            rad.add(zakaznik);
+            rad.add(zakaznikStanku);
         }
     }
 

@@ -1,5 +1,7 @@
 package generators;
 
+import java.util.Random;
+
 public class RandUniformContinuous extends RandGenerator {
 
     private double min;
@@ -7,25 +9,27 @@ public class RandUniformContinuous extends RandGenerator {
 
     public RandUniformContinuous(double min, double max) {
         super();
-        this.min = min;
-        this.max = max;
+        init(min, max);
     }
 
-    public RandUniformContinuous(long seed, double min, double max) {
+    public RandUniformContinuous(double min, double max, long seed) {
         super(seed);
-        this.min = min;
-        this.max = max;
+        init(min, max);
     }
 
+    public RandUniformContinuous(double min, double max, Random seedGenerator) {
+        super(seedGenerator.nextLong());
+        init(min, max);
+    }
 
-    @Override
-    public double getNextDouble() {
+    private void init(double min, double max) {
+        this.min = min;
+        this.max = max;
+        if (max < min)
+            throw new IllegalStateException("max < min");
+    }
+
+    public double nextValue() {
         return random.nextDouble() * (max - min) + min;
     }
-
-    @Override
-    public int getNextInt() {
-        throw new IllegalStateException("This should not be called");
-    }
-
 }
