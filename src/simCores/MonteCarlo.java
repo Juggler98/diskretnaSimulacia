@@ -1,3 +1,5 @@
+package simCores;
+
 public abstract class MonteCarlo {
 
     private int iteration = 1;

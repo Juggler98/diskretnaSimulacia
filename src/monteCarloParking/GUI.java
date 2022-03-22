@@ -1,3 +1,8 @@
+package monteCarloParking;
+
+import charts.Histogram;
+import charts.LineChart;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;

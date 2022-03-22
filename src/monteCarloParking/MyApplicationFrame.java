@@ -1,3 +1,5 @@
+package monteCarloParking;
+
 import org.jfree.chart.ui.ApplicationFrame;
 
 import java.awt.event.WindowEvent;
