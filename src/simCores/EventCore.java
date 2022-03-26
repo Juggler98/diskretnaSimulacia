@@ -17,15 +17,16 @@ public abstract class EventCore extends MonteCarlo {
     public void simulateEvents(double endTime) {
         simTime = 0;
         stopped = false;
-        while (!kalendarUdalosti.isEmpty() && !stopped && simTime <= endTime) {
+        while (!kalendarUdalosti.isEmpty() && !stopped) {
             Event event = kalendarUdalosti.poll();
             simTime = event.getTime();
             event.vykonaj();
+            //System.out.println(simTime / 3600);
             //System.out.println();
         }
     }
 
-    public void stop() {
+    public void stopEvents() {
         stopped = true;
     }
 
