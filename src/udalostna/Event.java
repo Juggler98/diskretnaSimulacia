@@ -28,4 +28,9 @@ public abstract class Event implements Comparable<Event> {
                 ", name='" + name + '\'' +
                 '}';
     }
+
+    @Override
+    public int compareTo(Event o) {
+        return time.compareTo(o.time);
+    }
 }

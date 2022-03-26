@@ -22,7 +22,7 @@ public class SalonSimulation extends EventCore {
     private final RandUniformContinuous randObjednavka = new RandUniformContinuous(200 - 120, 200 + 120, seedGenerator);
     private final RandTriangular randHlbkoveCistenie = new RandTriangular(360, 900, 540, seedGenerator);
     private final RandUniformContinuous randPlatba = new RandUniformContinuous(180 - 50, 180 + 50, seedGenerator);
-    private final RandUniformDiscrete randUcetJednoduchy = new RandUniformDiscrete(10 * 60, 30 * 60, seedGenerator);
+    private final RandUniformDiscrete randUcesJednoduchy = new RandUniformDiscrete(10 * 60, 30 * 60, seedGenerator);
     private final EmpiricDiscrete[] empiricDiscretesUcesZlozity = {new EmpiricDiscrete(30 * 60, 60 * 60, 0.4), new EmpiricDiscrete(61 * 60, 120 * 60, 0.6)};
     private final RandEmpiricDiscrete randUcesZlozity = new RandEmpiricDiscrete(empiricDiscretesUcesZlozity, seedGenerator);
     private final EmpiricDiscrete[] empiricDiscretesUcesSvadobny = {new EmpiricDiscrete(50 * 60, 60 * 60, 0.2), new EmpiricDiscrete(61 * 60, 100 * 60, 0.3), new EmpiricDiscrete(101 * 60, 150 * 60, 0.5)};
@@ -31,7 +31,6 @@ public class SalonSimulation extends EventCore {
     private final RandUniformDiscrete randLicenieZlozite = new RandUniformDiscrete(20 * 60, 100 * 60, seedGenerator);
     private final Random randPercentageTypZakaznika = new Random(seedGenerator.nextLong());
     private final Random randPercentageCiseniePleti = new Random(seedGenerator.nextLong());
-
     private final Random randPercentageTypUcesu = new Random(seedGenerator.nextLong());
     private final Random randPercentageTypLicenia = new Random(seedGenerator.nextLong());
 
@@ -57,14 +56,13 @@ public class SalonSimulation extends EventCore {
     private final int pocetKadernicok;
     private final int pocetKozmeticiek;
 
-    Main main;
+    private int sleepTime = 0;
 
-    public SalonSimulation(int endTime, int pocetRecepcnych, int pocetKadernicok, int pocetKozmeticiek, Main main) {
+    public SalonSimulation(int endTime, int pocetRecepcnych, int pocetKadernicok, int pocetKozmeticiek) {
         this.endTime = endTime;
         this.pocetRecepcnych = pocetRecepcnych;
         this.pocetKadernicok = pocetKadernicok;
         this.pocetKozmeticiek = pocetKozmeticiek;
-        this.main = main;
     }
 
     @Override
@@ -83,13 +81,15 @@ public class SalonSimulation extends EventCore {
         casStravenyVSalone = 0;
         dlzkaCakania = 0;
 
+        this.setSimTimeToZero();
+
         pracoviskoRecepcia = new Pracovisko(pocetRecepcnych);
         pracoviskoUcesy = new Pracovisko(pocetKadernicok);
         pracoviskoLicenie = new Pracovisko(pocetKozmeticiek);
 
         ZakaznikSalonu zakaznikSalonu = new ZakaznikSalonu(randPrichod.nextValue());
         EventPrichod eventPrichod = new EventPrichod(zakaznikSalonu, zakaznikSalonu.getCasPrichodu(), this);
-        kalendarUdalosti.add(eventPrichod);
+        this.addToKalendar(eventPrichod);
     }
 
     @Override
@@ -116,7 +116,8 @@ public class SalonSimulation extends EventCore {
         System.out.println("PriemernyCas: " + celkovyPriemerCasuVSalone / 3600 / pocetReplikacii + " hod");
         System.out.println("PriemernyCasCakania: " + celkovaDlzkaCakania / 60 / pocetReplikacii + " min");
 
-        main.set(celkovyPriemerCasuVSalone / 3600 / pocetReplikacii, celkovaDlzkaCakania / 60 / pocetReplikacii);
+        //main.set(celkovyPriemerCasuVSalone / 3600 / pocetReplikacii, celkovaDlzkaCakania / 60 / pocetReplikacii);
+
         System.out.println();
     }
 
@@ -144,8 +145,8 @@ public class SalonSimulation extends EventCore {
         return randPlatba;
     }
 
-    public RandUniformDiscrete getRandUcetJednoduchy() {
-        return randUcetJednoduchy;
+    public RandUniformDiscrete getRandUcesJednoduchy() {
+        return randUcesJednoduchy;
     }
 
     public RandEmpiricDiscrete getRandUcesZlozity() {
@@ -203,4 +204,13 @@ public class SalonSimulation extends EventCore {
     public int getEndTime() {
         return endTime;
     }
+
+    public int getSleepTime() {
+        return sleepTime;
+    }
+
+    public void setSleepTime(int sleepTime) {
+        this.sleepTime = sleepTime;
+    }
+
 }

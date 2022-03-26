@@ -7,7 +7,7 @@ import udalostna.salon.pracoviska.Zamestnanec;
 import udalostna.salon.zakaznik.TypZakaznika;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
-public class EventRecepciaEnd extends Event implements Comparable<Event> {
+public class EventRecepciaEnd extends Event {
 
     private final SalonSimulation salonSimulation;
     private final ZakaznikSalonu zakaznikSalonu;
@@ -43,21 +43,9 @@ public class EventRecepciaEnd extends Event implements Comparable<Event> {
                 }
             }
             if (zakaznikSalonu.getTypZakaznika() == TypZakaznika.LICENIE) {
-                if (salonSimulation.getRadLicenie().isEmpty() && salonSimulation.getPracoviskoLicenie().jeNiektoVolny()) {
-                    Zamestnanec zamestnanec = salonSimulation.getPracoviskoLicenie().obsadZamestnanca();
-                    EventLicenieStart eventLicenieStart = new EventLicenieStart(zakaznikSalonu, this.getTime(), salonSimulation, zamestnanec);
-                    salonSimulation.addToKalendar(eventLicenieStart);
-                } else {
-                    salonSimulation.getRadLicenie().add(zakaznikSalonu);
-                }
+                EventMethod.obsluhaOrRad(salonSimulation, salonSimulation.getRadLicenie(), salonSimulation.getPracoviskoLicenie(), EventStartType.LICENIE, this.getTime(), zakaznikSalonu);
             } else {
-                if (salonSimulation.getRadUces().isEmpty() && salonSimulation.getPracoviskoUcesy().jeNiektoVolny()) {
-                    Zamestnanec zamestnanec = salonSimulation.getPracoviskoUcesy().obsadZamestnanca();
-                    EventUcesStart eventUcesStart = new EventUcesStart(zakaznikSalonu, this.getTime(), salonSimulation, zamestnanec);
-                    salonSimulation.addToKalendar(eventUcesStart);
-                } else {
-                    salonSimulation.getRadUces().add(zakaznikSalonu);
-                }
+                EventMethod.obsluhaOrRad(salonSimulation, salonSimulation.getRadUces(), salonSimulation.getPracoviskoUcesy(), EventStartType.UCES, this.getTime(), zakaznikSalonu);
             }
             zakaznikSalonu.setObsluzeny();
         } else {
@@ -73,9 +61,4 @@ public class EventRecepciaEnd extends Event implements Comparable<Event> {
         }
     }
 
-
-    @Override
-    public int compareTo(Event o) {
-        return this.getTime().compareTo(o.getTime());
-    }
 }

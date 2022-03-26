@@ -1,7 +1,5 @@
 package udalostna.salon.zakaznik;
 
-import udalostna.salon.zakaznik.TypZakaznika;
-
 public class ZakaznikSalonu implements Comparable<ZakaznikSalonu> {
 
     private final double casPrichodu;

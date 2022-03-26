@@ -6,7 +6,7 @@ import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Zamestnanec;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
-public class EventLicenieStart extends Event implements Comparable<Event> {
+public class EventLicenieStart extends Event {
 
     private final SalonSimulation salonSimulation;
     private final ZakaznikSalonu zakaznikSalonu;
@@ -35,12 +35,6 @@ public class EventLicenieStart extends Event implements Comparable<Event> {
         EventLicenieEnd eventLicenieEnd = new EventLicenieEnd(zakaznikSalonu, this.getTime() + endTime, salonSimulation, zamestnanec);
         zamestnanec.addOdpracovanyCas(endTime);
         salonSimulation.addToKalendar(eventLicenieEnd);
-    }
-
-
-    @Override
-    public int compareTo(Event o) {
-        return this.getTime().compareTo(o.getTime());
     }
 
 

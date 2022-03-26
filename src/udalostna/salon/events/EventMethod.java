@@ -10,7 +10,7 @@ import java.util.Queue;
 
 public abstract class EventMethod {
 
-    public static boolean planStart (SalonSimulation salonSimulation, Queue<ZakaznikSalonu> rad, Pracovisko pracovisko, EventStartType eventStartType, double time) {
+    public static boolean planStart(SalonSimulation salonSimulation, Queue<ZakaznikSalonu> rad, Pracovisko pracovisko, EventStartType eventStartType, double time) {
         if (!rad.isEmpty() && pracovisko.jeNiektoVolny()) {
             ZakaznikSalonu zakaznikSalonu = rad.poll();
             Zamestnanec zamestnanec = pracovisko.obsadZamestnanca();
@@ -30,6 +30,27 @@ public abstract class EventMethod {
             return true;
         }
         return false;
+    }
+
+    public static void obsluhaOrRad(SalonSimulation salonSimulation, Queue<ZakaznikSalonu> rad, Pracovisko pracovisko, EventStartType eventStartType, double time, ZakaznikSalonu zakaznikSalonu) {
+        if (rad.isEmpty() && pracovisko.jeNiektoVolny()) {
+            Zamestnanec zamestnanec = pracovisko.obsadZamestnanca();
+            Event event = null;
+            switch (eventStartType) {
+                case UCES:
+                    event = new EventUcesStart(zakaznikSalonu, time, salonSimulation, zamestnanec);
+                    break;
+                case LICENIE:
+                    event = new EventLicenieStart(zakaznikSalonu, time, salonSimulation, zamestnanec);
+                    break;
+                case RECEPCIA:
+                    event = new EventRecepciaStart(zakaznikSalonu, time, salonSimulation, zamestnanec);
+                    break;
+            }
+            salonSimulation.addToKalendar(event);
+        } else {
+            rad.add(zakaznikSalonu);
+        }
     }
 
 

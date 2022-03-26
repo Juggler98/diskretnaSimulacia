@@ -6,7 +6,7 @@ import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Zamestnanec;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
-public class EventUcesStart extends Event implements Comparable<Event>{
+public class EventUcesStart extends Event {
 
     private final SalonSimulation salonSimulation;
     private final ZakaznikSalonu zakaznikSalonu;
@@ -21,11 +21,11 @@ public class EventUcesStart extends Event implements Comparable<Event>{
 
     @Override
     public void vykonaj() {
-//        System.out.println(this);
+        //System.out.println(this);
         double percentage = salonSimulation.getRandPercentageTypUcesu().nextDouble();
         double endTime;
         if (percentage < 0.4) {
-            endTime = salonSimulation.getRandUcetJednoduchy().nextValue();
+            endTime = salonSimulation.getRandUcesJednoduchy().nextValue();
         } else if (percentage < 0.8) {
             endTime = salonSimulation.getRandUcesZlozity().nextValue();
         } else {
@@ -36,9 +36,4 @@ public class EventUcesStart extends Event implements Comparable<Event>{
         salonSimulation.addToKalendar(eventUcesEnd);
     }
 
-
-    @Override
-    public int compareTo(Event o) {
-        return this.getTime().compareTo(o.getTime());
-    }
 }

@@ -6,7 +6,7 @@ import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Zamestnanec;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
-public class EventPrichod extends Event implements Comparable<Event> {
+public class EventPrichod extends Event {
 
     SalonSimulation salonSimulation;
     ZakaznikSalonu zakaznikSalonu;
@@ -37,9 +37,4 @@ public class EventPrichod extends Event implements Comparable<Event> {
         }
     }
 
-
-    @Override
-    public int compareTo(Event o) {
-        return this.getTime().compareTo(o.getTime());
-    }
 }
