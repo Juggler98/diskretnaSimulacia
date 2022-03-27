@@ -208,10 +208,6 @@ public class EventGUI extends JFrame implements ISimDelegate {
         this.setVisible(true);
     }
 
-    private void stop() {
-
-    }
-
     public void prepare(int n) {
         strategiaStr = "error";
         lineChart = new LineChart("Simulacia c. " + simulationCount + " - Strategia " + "\"" + strategiaStr + "\"");
@@ -283,6 +279,9 @@ public class EventGUI extends JFrame implements ISimDelegate {
         int minute = calendar.get(Calendar.MINUTE);
         int second = calendar.get(Calendar.SECOND);
         resultLabel.setText((hour < 10 ? "" + 0 + hour : hour) + ":" + (minute < 10 ? "" + 0 + minute : minute) + ":" + (second < 10 ? "" + 0 + second : second));
+        if (!salonSimulation.isRun()) {
+            stop.doClick();
+        }
         //System.out.println(salonSimulation.getRadRecepcia().size());
     }
 

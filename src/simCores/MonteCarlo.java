@@ -21,6 +21,7 @@ public abstract class MonteCarlo {
             afterReplication();
             if (!run) break;
         }
+        run = false;
         afterReplications();
     }
 
@@ -38,4 +39,7 @@ public abstract class MonteCarlo {
         this.run = false;
     }
 
+    public boolean isRun() {
+        return run;
+    }
 }

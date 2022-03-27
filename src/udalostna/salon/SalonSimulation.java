@@ -18,7 +18,7 @@ public class SalonSimulation extends EventCore {
     private final LinkedList<ZakaznikSalonu> radLicenie = new LinkedList<>();
 
     private final Random seedGenerator = new Random();
-    private final RandPoisson randPrichod = new RandPoisson(450, seedGenerator);
+    private final RandExponential randPrichod = new RandExponential(450, seedGenerator);
     private final RandUniformContinuous randObjednavka = new RandUniformContinuous(200 - 120, 200 + 120, seedGenerator);
     private final RandTriangular randHlbkoveCistenie = new RandTriangular(360, 900, 540, seedGenerator);
     private final RandUniformContinuous randPlatba = new RandUniformContinuous(180 - 50, 180 + 50, seedGenerator);
@@ -118,6 +118,8 @@ public class SalonSimulation extends EventCore {
 
         //main.set(celkovyPriemerCasuVSalone / 3600 / pocetReplikacii, celkovaDlzkaCakania / 60 / pocetReplikacii);
 
+        this.refreshGUI();
+
         System.out.println();
     }
 
@@ -165,7 +167,7 @@ public class SalonSimulation extends EventCore {
         return randLicenieZlozite;
     }
 
-    public RandPoisson getRandPrichod() {
+    public RandExponential getRandPrichod() {
         return randPrichod;
     }
 

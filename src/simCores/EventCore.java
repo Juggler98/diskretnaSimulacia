@@ -20,20 +20,11 @@ public abstract class EventCore extends MonteCarlo {
 
     }
 
-    public void registerDelegate(ISimDelegate delegate) {
-        delegates.add(delegate);
-    }
-
-    private void refreshGUI() {
-        for (ISimDelegate delegate : delegates) {
-            delegate.refresh(this);
-        }
-    }
-
     public void simulateEvents(double endTime) {
         simTime = 0;
         stopped = false;
-        planSystemEvent();
+        EventSystem eventSystem = new EventSystem(simTime, this);
+        kalendarUdalosti.add(eventSystem);
         while (!kalendarUdalosti.isEmpty() && !stopped) {
             Event event = kalendarUdalosti.poll();
             simTime = event.getTime();
@@ -46,8 +37,16 @@ public abstract class EventCore extends MonteCarlo {
                     e.printStackTrace();
                 }
             }
-            //System.out.println(simTime / 3600);
-            //System.out.println();
+        }
+    }
+
+    public void registerDelegate(ISimDelegate delegate) {
+        delegates.add(delegate);
+    }
+
+    protected void refreshGUI() {
+        for (ISimDelegate delegate : delegates) {
+            delegate.refresh(this);
         }
     }
 
@@ -85,8 +84,4 @@ public abstract class EventCore extends MonteCarlo {
         this.simTime = 0;
     }
 
-    public void planSystemEvent() {
-        EventSystem eventSystem = new EventSystem(simTime, this);
-        kalendarUdalosti.add(eventSystem);
-    }
 }
