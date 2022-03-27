@@ -41,7 +41,6 @@ public class SalonSimulation extends EventCore {
     private final ArrayList<ZakaznikSalonu> zakaznici = new ArrayList<>();
 
     private final int endTime;
-    private int sleepTime = 0;
     private int pocetReplikacii = 0;
 
     private final int[] statsVykonov = new int[10];
@@ -114,7 +113,7 @@ public class SalonSimulation extends EventCore {
 
     @Override
     public void replication() {
-        this.simulateEvents(endTime);
+        this.simulateEvents(0);
     }
 
     @Override
@@ -221,14 +220,6 @@ public class SalonSimulation extends EventCore {
 
     public int getEndTime() {
         return endTime;
-    }
-
-    public int getSleepTime() {
-        return sleepTime;
-    }
-
-    public void setSleepTime(int sleepTime) {
-        this.sleepTime = sleepTime;
     }
 
     public int getPocetReplikacii() {

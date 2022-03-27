@@ -2,7 +2,7 @@ package simCores;
 
 import udalostna.Event;
 import udalostna.gui.ISimDelegate;
-import udalostna.salon.events.EventSystem;
+import udalostna.EventSystem;
 
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -13,6 +13,7 @@ public abstract class EventCore extends MonteCarlo {
     private boolean stopped = false;
     private double simTime = 0;
     private boolean paused = false;
+    private int sleepTime = 0;
 
     private final LinkedList<ISimDelegate> delegates = new LinkedList<>();
 
@@ -25,7 +26,7 @@ public abstract class EventCore extends MonteCarlo {
         stopped = false;
         EventSystem eventSystem = new EventSystem(simTime, this);
         kalendarUdalosti.add(eventSystem);
-        while (!kalendarUdalosti.isEmpty() && !stopped) {
+        while (!kalendarUdalosti.isEmpty() && !stopped && (endTime == 0 || simTime <= endTime)) {
             Event event = kalendarUdalosti.poll();
             simTime = event.getTime();
             event.vykonaj();
@@ -72,12 +73,24 @@ public abstract class EventCore extends MonteCarlo {
         kalendarUdalosti.add(e);
     }
 
+    public void clearKalendar() {
+        kalendarUdalosti.clear();
+    }
+
     public int getKalendarSize() {
         return kalendarUdalosti.size();
     }
 
     public double getSimTime() {
         return simTime;
+    }
+
+    public int getSleepTime() {
+        return sleepTime;
+    }
+
+    public void setSleepTime(int sleepTime) {
+        this.sleepTime = sleepTime;
     }
 
     public void setSimTimeToZero() {

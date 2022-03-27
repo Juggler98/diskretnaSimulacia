@@ -1,25 +1,23 @@
-package udalostna.salon.events;
+package udalostna;
 
 import simCores.EventCore;
-import udalostna.Event;
-import udalostna.salon.SalonSimulation;
 
 public class EventSystem extends Event {
 
-    private final SalonSimulation salonSimulation;
+    private final EventCore eventCore;
 
     public EventSystem(double time, EventCore eventCore) {
         super(time, eventCore, "EventSystem");
-        this.salonSimulation = (SalonSimulation) eventCore;
+        this.eventCore = eventCore;
     }
 
     @Override
     public void vykonaj() {
-        if (salonSimulation.getKalendarSize() > 0) {
-            int sleepTime = salonSimulation.getSleepTime();
+        if (eventCore.getKalendarSize() > 0) {
+            int sleepTime = eventCore.getSleepTime();
             if (sleepTime > 0) {
                 if (sleepTime > 1000) {
-                    for (int i = 0; i < salonSimulation.getSleepTime() / 1000; i++) {
+                    for (int i = 0; i < eventCore.getSleepTime() / 1000; i++) {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
@@ -33,8 +31,8 @@ public class EventSystem extends Event {
                         e.printStackTrace();
                     }
                 }
-                EventSystem eventSystem = new EventSystem(this.getTime() + 1, salonSimulation);
-                salonSimulation.addToKalendar(eventSystem);
+                EventSystem eventSystem = new EventSystem(this.getTime() + 1, eventCore);
+                eventCore.addToKalendar(eventSystem);
             }
         }
     }
