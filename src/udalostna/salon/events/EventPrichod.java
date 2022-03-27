@@ -22,8 +22,7 @@ public class EventPrichod extends Event {
 //        System.out.println("Prichod: " + getTime());
 //        System.out.println(zakaznikSalonu);
         if (salonSimulation.getRadRecepcia().isEmpty() && salonSimulation.getPracoviskoRecepcia().jeNiektoVolny() && salonSimulation.getDlzkaRaduUcesyLicenie() <= 10) {
-            Zamestnanec zamestnanec = salonSimulation.getPracoviskoRecepcia().obsadZamestnanca();
-            EventRecepciaStart zaciatokRecepcie = new EventRecepciaStart(this.zakaznikSalonu, this.getTime(), salonSimulation, zamestnanec);
+            EventRecepciaStart zaciatokRecepcie = new EventRecepciaStart(this.zakaznikSalonu, this.getTime(), salonSimulation);
             salonSimulation.addToKalendar(zaciatokRecepcie);
         } else {
             salonSimulation.getRadRecepcia().add(this.zakaznikSalonu);
@@ -33,7 +32,8 @@ public class EventPrichod extends Event {
             EventPrichod prichod = new EventPrichod(zakaznikSalonu, zakaznikSalonu.getCasPrichodu(), salonSimulation);
             salonSimulation.addToKalendar(prichod);
         } else {
-            salonSimulation.getRadRecepcia().removeIf(z -> !z.isObsluzeny());
+            EventZatvorenie zatvorenie = new EventZatvorenie(salonSimulation.getEndTime(), salonSimulation);
+            salonSimulation.addToKalendar(zatvorenie);
         }
     }
 

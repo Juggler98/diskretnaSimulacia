@@ -27,6 +27,9 @@ public class EventLicenieEnd extends Event {
         }
         if (zakaznikSalonu.isHlbkoveLicenie())
             salonSimulation.statsVykonov[7]++;
+        zamestnanec.setObsluhuje(false);
+        zamestnanec.addOdpracovanyCas(this.getTime() - zamestnanec.getZaciatokObsluhy());
+        zamestnanec.setVyuzitie(zamestnanec.getOdpracovanyCas() / salonSimulation.getSimTime());
         salonSimulation.getPracoviskoLicenie().uvolniZamestnanca(zamestnanec);
         if (zakaznikSalonu.isHlbkoveLicenie()) {
             EventMethod.obsluhaOrRad(salonSimulation, salonSimulation.getRadLicenie(), salonSimulation.getPracoviskoLicenie(), EventStartType.LICENIE, this.getTime(), zakaznikSalonu);

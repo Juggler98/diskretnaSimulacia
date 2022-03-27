@@ -10,30 +10,34 @@ public class EventRecepciaStart extends Event {
 
     private final SalonSimulation salonSimulation;
     private final ZakaznikSalonu zakaznikSalonu;
-    private final Zamestnanec zamestnanec;
 
-    public EventRecepciaStart(ZakaznikSalonu zakaznikSalonu, double time, EventCore eventCore, Zamestnanec zamestnanec) {
-        super(time, eventCore, "RecepciaEnd");
+    public EventRecepciaStart(ZakaznikSalonu zakaznikSalonu, double time, EventCore eventCore) {
+        super(time, eventCore, "RecepciaStart");
         this.salonSimulation = (SalonSimulation) eventCore;
         this.zakaznikSalonu = zakaznikSalonu;
-        this.zamestnanec = zamestnanec;
     }
 
     @Override
     public void vykonaj() {
         double koniecRecepcieTime;
 //        System.out.println(this.getTime() / 3600);
-        if (this.zakaznikSalonu.isObsluzeny()) {
-            koniecRecepcieTime = salonSimulation.getRandPlatba().nextValue();
+        if (salonSimulation.getPracoviskoRecepcia().jeNiektoVolny()) {
+            if (this.zakaznikSalonu.isObsluzeny()) {
+                koniecRecepcieTime = salonSimulation.getRandPlatba().nextValue();
+            } else {
+                salonSimulation.statsVykonov[8]++;
+                koniecRecepcieTime = salonSimulation.getRandObjednavka().nextValue();
+                zakaznikSalonu.setCasCakania(this.getTime() - zakaznikSalonu.getCasPrichodu());
+                salonSimulation.dlzkaCakania += zakaznikSalonu.getCasCakania();
+            }
+            Zamestnanec zamestnanec = salonSimulation.getPracoviskoRecepcia().obsadZamestnanca();
+            zamestnanec.setObsluhuje(true);
+            EventRecepciaEnd koniecRecepcie = new EventRecepciaEnd(this.zakaznikSalonu,this.getTime() + koniecRecepcieTime, salonSimulation, zamestnanec);
+            zamestnanec.setZaciatokObsluhy(this.getTime());
+            salonSimulation.addToKalendar(koniecRecepcie);
         } else {
-            salonSimulation.statsVykonov[8]++;
-            koniecRecepcieTime = salonSimulation.getRandObjednavka().nextValue();
-            zakaznikSalonu.setCasCakania(this.getTime() - zakaznikSalonu.getCasPrichodu());
-            salonSimulation.dlzkaCakania += zakaznikSalonu.getCasCakania();
+            salonSimulation.getRadRecepcia().add(zakaznikSalonu);
         }
-        EventRecepciaEnd koniecRecepcie = new EventRecepciaEnd(this.zakaznikSalonu,this.getTime() + koniecRecepcieTime, salonSimulation, zamestnanec);
-        zamestnanec.addOdpracovanyCas(koniecRecepcieTime);
-        salonSimulation.addToKalendar(koniecRecepcie);
     }
 
 }

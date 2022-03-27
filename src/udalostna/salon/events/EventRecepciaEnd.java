@@ -55,6 +55,9 @@ public class EventRecepciaEnd extends Event {
             salonSimulation.casStravenyVSalone += zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu();
             salonSimulation.statsVykonov[9]++;
         }
+        zamestnanec.setObsluhuje(false);
+        zamestnanec.addOdpracovanyCas(this.getTime() - zamestnanec.getZaciatokObsluhy());
+        zamestnanec.setVyuzitie(zamestnanec.getOdpracovanyCas() / salonSimulation.getSimTime());
         salonSimulation.getPracoviskoRecepcia().uvolniZamestnanca(zamestnanec);
         if ((this.getTime() <= salonSimulation.getEndTime() && salonSimulation.getDlzkaRaduUcesyLicenie() <= 10) || (!salonSimulation.getRadRecepcia().isEmpty() && salonSimulation.getRadRecepcia().peek().isObsluzeny())) {
             EventMethod.planStart(salonSimulation, salonSimulation.getRadRecepcia(), salonSimulation.getPracoviskoRecepcia(), EventStartType.RECEPCIA, this.getTime());

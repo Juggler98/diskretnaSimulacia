@@ -28,6 +28,9 @@ public class EventUcesEnd extends Event {
         } else {
             salonSimulation.statsVykonov[1]++;
         }
+        zamestnanec.setObsluhuje(false);
+        zamestnanec.addOdpracovanyCas(this.getTime() - zamestnanec.getZaciatokObsluhy());
+        zamestnanec.setVyuzitie(zamestnanec.getOdpracovanyCas() / salonSimulation.getSimTime());
         salonSimulation.getPracoviskoUcesy().uvolniZamestnanca(zamestnanec);
         if (zakaznikSalonu.getTypZakaznika() == TypZakaznika.UCESAJLICENIE) {
             EventMethod.obsluhaOrRad(salonSimulation, salonSimulation.getRadLicenie(), salonSimulation.getPracoviskoLicenie(), EventStartType.LICENIE, this.getTime(), zakaznikSalonu);
