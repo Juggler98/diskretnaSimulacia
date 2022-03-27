@@ -19,7 +19,7 @@ public class EventZatvorenie extends Event {
     public void vykonaj() {
         for (ZakaznikSalonu z : salonSimulation.getRadRecepcia()) {
             if (!z.isObsluzeny()) {
-                z.setStavZakaznika(StavZakaznika.OCHOD);
+                z.setStavZakaznika(StavZakaznika.ODCHOD);
                 z.setCasOdchodu(this.getTime());
             }
         }

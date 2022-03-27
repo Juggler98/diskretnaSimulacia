@@ -51,7 +51,7 @@ public class EventRecepciaEnd extends Event {
             zakaznikSalonu.setObsluzeny();
         } else {
             zakaznikSalonu.setCasOdchodu(this.getTime());
-            zakaznikSalonu.setStavZakaznika(StavZakaznika.OCHOD);
+            zakaznikSalonu.setStavZakaznika(StavZakaznika.ODCHOD);
             salonSimulation.addCasStravenyVSalone(zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu());
             salonSimulation.getStatsVykonov()[9]++;
         }

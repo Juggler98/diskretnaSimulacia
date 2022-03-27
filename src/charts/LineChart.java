@@ -19,6 +19,7 @@ public class LineChart extends MyApplicationFrame {
 
     private final XYSeries series;
     private final JFreeChart chart;
+    private final ChartPanel chartPanel;
     private final String title;
 
     private double max = Integer.MIN_VALUE;
@@ -26,7 +27,7 @@ public class LineChart extends MyApplicationFrame {
 
     private int iteration = 0;
 
-    public LineChart(String title) {
+    public LineChart(String title, String osX, String osY) {
 
         super(title);
 
@@ -34,10 +35,10 @@ public class LineChart extends MyApplicationFrame {
         this.title = title;
 
         final XYSeriesCollection dataset = new XYSeriesCollection(this.series);
-        chart = createChart(dataset);
+        chart = createChart(dataset, osX, osY);
         chart.setBackgroundPaint(Color.LIGHT_GRAY);
         final JPanel content = new JPanel(new BorderLayout());
-        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel = new ChartPanel(chart);
         content.add(chartPanel);
 
         GraphicsConfiguration config = this.getGraphicsConfiguration();
@@ -54,11 +55,11 @@ public class LineChart extends MyApplicationFrame {
         setContentPane(content);
     }
 
-    private JFreeChart createChart(final XYDataset dataset) {
+    private JFreeChart createChart(final XYDataset dataset, String osX, String osY) {
         final JFreeChart result = ChartFactory.createXYLineChart(
                 title,
-                "Iteration",
-                "Value",
+                osX,
+                osY,
                 dataset,
                 PlotOrientation.VERTICAL,
                 false,
@@ -83,20 +84,26 @@ public class LineChart extends MyApplicationFrame {
         return result;
     }
 
-    public void addPoint(int iteration, double point) {
+    public void addPoint(int x, double y) {
         if (this.iteration < 100000) {
-            if (point > max) {
-                max = point;
+            if (y > max) {
+                max = y;
             }
-            if (point < min) {
-                min = point;
+            if (y < min) {
+                min = y;
             }
             if (max > min) {
                 chart.getXYPlot().getRangeAxis().setRange(min, max);
             }
         }
-        this.series.add(iteration, point);
+        this.series.add(x, y);
         this.iteration++;
     }
+
+    public void setSize(int width, int height) {
+        chartPanel.setPreferredSize(new java.awt.Dimension(width, height));
+    }
+
+
 
 }  

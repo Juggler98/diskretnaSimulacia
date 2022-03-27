@@ -243,7 +243,7 @@ public class GUI extends JFrame {
         } else if (strategia == 3) {
             strategiaStr = "n/2";
         }
-        lineChart = new LineChart("Simulacia c. " + simulationCount + " - Strategia " + "\"" + strategiaStr + "\"");
+        lineChart = new LineChart("Simulacia c. " + simulationCount + " - Strategia " + "\"" + strategiaStr + "\"", "Iteration", "Value");
         lineChart.pack();
         lineChart.setVisible(true);
 

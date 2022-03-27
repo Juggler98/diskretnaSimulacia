@@ -33,6 +33,7 @@ public class EventRecepciaStart extends Event {
                 zakaznikSalonu.setCasZaciatkuObsluhy(0, this.getTime());
                 zakaznikSalonu.setStavZakaznika(StavZakaznika.OBJEDNAVKA);
                 salonSimulation.addDlzkaCakaniaRecepcia(this.getTime() - zakaznikSalonu.getCasPrichodu());
+                salonSimulation.addDlzkaRaduRecepcia((this.getTime() - zakaznikSalonu.getCasPrichodu()) * (salonSimulation.getRadRecepcia().size() + 1));
             }
             Zamestnanec zamestnanec = salonSimulation.getPracoviskoRecepcia().obsadZamestnanca();
             zamestnanec.setObsluhuje(true);

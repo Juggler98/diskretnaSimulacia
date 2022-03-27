@@ -1,5 +1,6 @@
 package udalostna.gui;
 
+import charts.LineChart;
 import simCores.EventCore;
 import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Zamestnanec;
@@ -28,6 +29,8 @@ public class EventGUI extends JFrame implements ISimDelegate {
     private int pocetZakaznikov = 0;
 
     private final JTable[] tables = new JTable[5];
+    private final JTextField[] zamestnanciField = new JTextField[3];
+    private final JTextField pocetOpakovani;
 
     private static final Calendar calendar = Calendar.getInstance();
 
@@ -57,8 +60,8 @@ public class EventGUI extends JFrame implements ISimDelegate {
         stop = new JButton("Stop");
         pause = new JButton("Pause");
         JButton test = new JButton("Test");
-        JTextField pocetOpakovani = new JTextField();
-        JTextField[] zamestnanciField = new JTextField[3];
+        JButton graf = new JButton("Graf");
+        pocetOpakovani = new JTextField();
         for (int i = 0; i < 3; i++) {
             zamestnanciField[i] = new JTextField();
         }
@@ -83,10 +86,8 @@ public class EventGUI extends JFrame implements ISimDelegate {
         zamestnanciField[1].setText("6");
         zamestnanciField[2].setText("5");
 
-
         spinner.setToolTipText("Rychlost");
         ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().setEditable(false);
-
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -206,8 +207,13 @@ public class EventGUI extends JFrame implements ISimDelegate {
             }
         });
 
-        test.addActionListener(e ->  {
+        test.addActionListener(e -> {
             TestThread thread = new TestThread();
+            thread.start();
+        });
+
+        graf.addActionListener(e -> {
+            GrafThread thread = new GrafThread();
             thread.start();
         });
 
@@ -232,6 +238,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
         stop.setBounds(130, space + buttonHeight, buttonWidth, buttonHeight);
         pause.setBounds(130, space + buttonHeight * 2, buttonWidth, buttonHeight);
         test.setBounds(width - space - 80, space, 60, buttonHeight);
+        graf.setBounds(width - space - 80, space + buttonHeight, 60, buttonHeight);
 
         for (int i = 0; i < 3; i++) {
             zamestnanciField[i].setBounds(space + 40 * i, space, 40, buttonHeight);
@@ -252,6 +259,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
         panel.add(stop);
         panel.add(pause);
         panel.add(test);
+        panel.add(graf);
         panel.add(spinner);
         for (int i = 0; i < 3; i++) {
             panel.add(zamestnanciField[i]);
@@ -283,6 +291,21 @@ public class EventGUI extends JFrame implements ISimDelegate {
             stop.setEnabled(false);
         }
         isRunning = false;
+    }
+
+    private void graf() {
+        this.iterationCount = Integer.parseInt(pocetOpakovani.getText());
+        int kadernicky = Integer.parseInt(zamestnanciField[1].getText());
+        int kozmeticky = Integer.parseInt(zamestnanciField[2].getText());
+        LineChart lineChart = new LineChart(String.format("%d Kaderníčok, %d Kozmetičiek", kadernicky, kozmeticky), "Recepčné", "Priemerná dĺžka radu");
+        lineChart.setSize(740, 620);
+        lineChart.pack();
+        lineChart.setVisible(true);
+        for (int recepcne = 1; recepcne <= 10; recepcne++) {
+            SalonSimulation salonSimulation = new SalonSimulation((17 - 9) * 3600, recepcne, kadernicky, kozmeticky);
+            salonSimulation.simulate(10000);
+            lineChart.addPoint(recepcne, salonSimulation.getCelkovaDlzkaRaduRecepcia() / salonSimulation.getPocetReplikacii());
+        }
     }
 
     private void test() {
@@ -322,6 +345,12 @@ public class EventGUI extends JFrame implements ISimDelegate {
             tables[0].getModel().setValueAt(salonSimulation.getRadRecepcia().size(), 0, 1);
             tables[0].getModel().setValueAt(salonSimulation.getRadUces().size(), 1, 1);
             tables[0].getModel().setValueAt(salonSimulation.getRadLicenie().size(), 2, 1);
+            if (salonSimulation.getDlzkaCakaniaRecepcia() != 0) {
+                tables[0].getModel().setValueAt(salonSimulation.getDlzkaRaduRecepcia() / salonSimulation.getDlzkaCakaniaRecepcia(), 0, 2);
+            } else {
+                tables[0].getModel().setValueAt(0.0, 0, 2);
+            }
+            tables[0].getModel().setValueAt(salonSimulation.getCelkovaDlzkaRaduRecepcia() / salonSimulation.getPocetReplikacii(), 0, 3);
 
             if (salonSimulation.getZakaznici().size() == 0 && pocetZakaznikov > 0) {
                 tables[2].setModel(new DefaultTableModel(null, new String[]{"Zákaznik", "Stav", "Prichod", "Objednávka", "Účes", "Hlbkové čistenie", "Líčenie", "Platba", "Odchod", "Celkový čas"}));
@@ -397,6 +426,13 @@ public class EventGUI extends JFrame implements ISimDelegate {
         @Override
         public void run() {
             test();
+        }
+    }
+
+    private class GrafThread extends Thread {
+        @Override
+        public void run() {
+            graf();
         }
     }
 

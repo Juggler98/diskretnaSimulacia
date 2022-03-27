@@ -10,5 +10,5 @@ public enum StavZakaznika {
     LICENIE,
     HLBKOVECISTENIE,
     PLATBA,
-    OCHOD,
+    ODCHOD,
 }

@@ -54,6 +54,9 @@ public class SalonSimulation extends EventCore {
     private double dlzkaCakaniaRecepcia = 0;
     private double celkovaDlzkaCakaniaRecepcia = 0;
 
+    private double dlzkaRaduRecepcia = 0;
+    private double celkovaDlzkaRaduRecepcia = 0;
+
     private final int pocetRecepcnych;
     private final int pocetKadernicok;
     private final int pocetKozmeticiek;
@@ -82,6 +85,7 @@ public class SalonSimulation extends EventCore {
 
         casStravenyVSalone = 0;
         dlzkaCakaniaRecepcia = 0;
+        dlzkaRaduRecepcia = 0;
 
         this.setSimTimeToZero();
 
@@ -117,6 +121,10 @@ public class SalonSimulation extends EventCore {
     public void afterReplication() {
         celkovyCasVSalone += casStravenyVSalone / statsVykonov[9];
         celkovaDlzkaCakaniaRecepcia += dlzkaCakaniaRecepcia / statsVykonov[9];
+
+        if (dlzkaCakaniaRecepcia != 0) {
+            celkovaDlzkaRaduRecepcia += dlzkaRaduRecepcia / dlzkaCakaniaRecepcia;
+        }
 
         for (int i = 0; i < statsVykonov.length; i++) {
             statsAllVykonov[i] += statsVykonov[i];
@@ -270,5 +278,18 @@ public class SalonSimulation extends EventCore {
     public void addDlzkaCakaniaRecepcia(double dlzkaCakaniaRecepcia) {
         this.dlzkaCakaniaRecepcia += dlzkaCakaniaRecepcia;
     }
+
+    public void addDlzkaRaduRecepcia(double dlzkaRadu) {
+        dlzkaRaduRecepcia += dlzkaRadu;
+    }
+
+    public double getCelkovaDlzkaRaduRecepcia() {
+        return celkovaDlzkaRaduRecepcia;
+    }
+
+    public double getDlzkaRaduRecepcia() {
+        return dlzkaRaduRecepcia;
+    }
+
 
 }
