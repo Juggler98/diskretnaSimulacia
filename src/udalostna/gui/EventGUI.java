@@ -352,16 +352,16 @@ public class EventGUI extends JFrame implements ISimDelegate {
             }
             tables[0].getModel().setValueAt(salonSimulation.getCelkovaDlzkaRaduRecepcia() / salonSimulation.getPocetReplikacii(), 0, 3);
 
-            if (salonSimulation.getZakaznici().size() == 0 && pocetZakaznikov > 0) {
-                tables[2].setModel(new DefaultTableModel(null, new String[]{"Zákaznik", "Stav", "Prichod", "Objednávka", "Účes", "Hlbkové čistenie", "Líčenie", "Platba", "Odchod", "Celkový čas"}));
-                pocetZakaznikov = 0;
-            }
-
             for (int i = 0; i < salonSimulation.getZamestnanci().size(); i++) {
                 Zamestnanec zamestnanec = salonSimulation.getZamestnanci().get(i);
                 tables[1].getModel().setValueAt(getTime((int) zamestnanec.getOdpracovanyCas(), 0), i, 2);
                 tables[1].getModel().setValueAt(zamestnanec.isObsluhuje() ? "X" : "", i, 1);
                 tables[1].getModel().setValueAt(Math.round(zamestnanec.getVyuzitie() * 100 * 100) / 100.0, i, 3);
+            }
+
+            if (salonSimulation.getZakaznici().size() <= 1 && pocetZakaznikov > 1) {
+                tables[2].setModel(new DefaultTableModel(null, new String[]{"Zákaznik", "Stav", "Prichod", "Objednávka", "Účes", "Hlbkové čistenie", "Líčenie", "Platba", "Odchod", "Celkový čas"}));
+                pocetZakaznikov = 0;
             }
 
             for (int i = 0; i < salonSimulation.getZakaznici().size(); i++) {

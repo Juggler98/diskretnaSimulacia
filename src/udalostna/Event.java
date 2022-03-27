@@ -5,8 +5,8 @@ import simCores.EventCore;
 public abstract class Event implements Comparable<Event> {
 
     private final Double time;
-    private EventCore eventCore;
-    private String name;
+    private final EventCore eventCore;
+    private final String name;
 
     public Event(double time, EventCore eventCore, String name) {
         this.time = time;
