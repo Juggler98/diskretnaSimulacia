@@ -22,18 +22,18 @@ public class EventLicenieEnd extends Event {
 
     @Override
     public void vykonaj() {
-        if (zakaznikSalonu.getTypZakaznika() != TypZakaznika.UCESAJLICENIE && !zakaznikSalonu.isHlbkoveLicenie()) {
-            salonSimulation.statsVykonov[3]++;
+        if (zakaznikSalonu.getTypZakaznika() != TypZakaznika.UCESAJLICENIE && !zakaznikSalonu.isGoToHlbkoveLicenie()) {
+            salonSimulation.getStatsVykonov()[3]++;
         }
-        if (zakaznikSalonu.isHlbkoveLicenie())
-            salonSimulation.statsVykonov[7]++;
+        if (zakaznikSalonu.isGoToHlbkoveLicenie())
+            salonSimulation.getStatsVykonov()[7]++;
         zamestnanec.setObsluhuje(false);
         zamestnanec.addOdpracovanyCas(this.getTime() - zamestnanec.getZaciatokObsluhy());
         zamestnanec.setVyuzitie(zamestnanec.getOdpracovanyCas() / salonSimulation.getSimTime());
         salonSimulation.getPracoviskoLicenie().uvolniZamestnanca(zamestnanec);
-        if (zakaznikSalonu.isHlbkoveLicenie()) {
+        if (zakaznikSalonu.isGoToHlbkoveLicenie()) {
             EventMethod.obsluhaOrRad(salonSimulation, salonSimulation.getRadLicenie(), salonSimulation.getPracoviskoLicenie(), EventStartType.LICENIE, this.getTime(), zakaznikSalonu);
-            zakaznikSalonu.setHlbkoveLicenie(false);
+            zakaznikSalonu.setGoToHlbkoveLicenie(false);
         } else {
             EventMethod.obsluhaOrRad(salonSimulation, salonSimulation.getRadRecepcia(), salonSimulation.getPracoviskoRecepcia(), EventStartType.RECEPCIA, this.getTime(), zakaznikSalonu);
         }

@@ -4,6 +4,7 @@ import simCores.EventCore;
 import udalostna.Event;
 import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Zamestnanec;
+import udalostna.salon.zakaznik.StavZakaznika;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
 public class EventUcesStart extends Event {
@@ -19,7 +20,6 @@ public class EventUcesStart extends Event {
 
     @Override
     public void vykonaj() {
-        //System.out.println(this);
         if (salonSimulation.getPracoviskoUcesy().jeNiektoVolny()) {
             double percentage = salonSimulation.getRandPercentageTypUcesu().nextDouble();
             double endTime;
@@ -30,6 +30,8 @@ public class EventUcesStart extends Event {
             } else {
                 endTime = salonSimulation.getRandUcesSvadobny().nextValue();
             }
+            zakaznikSalonu.setStavZakaznika(StavZakaznika.UCES);
+            zakaznikSalonu.setCasZaciatkuObsluhy(1, this.getTime());
             Zamestnanec zamestnanec = salonSimulation.getPracoviskoUcesy().obsadZamestnanca();
             zamestnanec.setObsluhuje(true);
             zamestnanec.setZaciatokObsluhy(this.getTime());
@@ -37,6 +39,7 @@ public class EventUcesStart extends Event {
             salonSimulation.addToKalendar(eventUcesEnd);
         } else {
             salonSimulation.getRadUces().add(zakaznikSalonu);
+            zakaznikSalonu.setStavZakaznika(StavZakaznika.RADUCES);
         }
     }
 

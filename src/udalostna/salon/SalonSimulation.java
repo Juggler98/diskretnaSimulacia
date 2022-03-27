@@ -5,6 +5,7 @@ import simCores.EventCore;
 import udalostna.salon.events.EventPrichod;
 import udalostna.salon.pracoviska.Pracovisko;
 import udalostna.salon.pracoviska.Zamestnanec;
+import udalostna.salon.zakaznik.StavZakaznika;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
 import java.util.*;
@@ -37,26 +38,25 @@ public class SalonSimulation extends EventCore {
     private Pracovisko pracoviskoLicenie;
 
     private final ArrayList<Zamestnanec> zamestnanci = new ArrayList<>();
+    private final ArrayList<ZakaznikSalonu> zakaznici = new ArrayList<>();
 
     private final int endTime;
-
-    public int[] statsVykonov = new int[10];
-    private final double[] statsAllVykonov = new double[10];
-    private final String[] statsNames = {"zadaneUcesy", "spraveneUcesy", "zadaneLicenia", "spraveneLicenia", "zadaneUcesyAjLicenia", "spraveneUcesyAjLicenia", "zadaneCistenie", "spraveneCistenie", "pocetZadanychObjednavok", "pocetObsluzenychZakaznikov"};
-
-    public double casStravenyVSalone = 0;
-    private double celkovyPriemerCasuVSalone = 0;
-
-    public double dlzkaCakania = 0;
-    private double celkovaDlzkaCakania = 0;
-
+    private int sleepTime = 0;
     private int pocetReplikacii = 0;
+
+    private final int[] statsVykonov = new int[10];
+    private final double[] statsAllVykonov = new double[10];
+    private final String[] statsNames = {"Zadané účesy", "Spravené účesy", "Zadané Líčenia", "Spravené Líčenia", "Zadané účesy aj líčenia", "Spravené účesy aj líčenia", "Zadané čistenia", "Spravené čistenia", "Zadané objednávky", "Dokončené objednávky", "Čas na objednávku", "Čas v sálone"};
+
+    private double casStravenyVSalone = 0;
+    private double celkovyCasVSalone = 0;
+
+    private double dlzkaCakaniaRecepcia = 0;
+    private double celkovaDlzkaCakaniaRecepcia = 0;
 
     private final int pocetRecepcnych;
     private final int pocetKadernicok;
     private final int pocetKozmeticiek;
-
-    private int sleepTime = 0;
 
     public SalonSimulation(int endTime, int pocetRecepcnych, int pocetKadernicok, int pocetKozmeticiek) {
         this.endTime = endTime;
@@ -81,7 +81,7 @@ public class SalonSimulation extends EventCore {
         Arrays.fill(statsVykonov, 0);
 
         casStravenyVSalone = 0;
-        dlzkaCakania = 0;
+        dlzkaCakaniaRecepcia = 0;
 
         this.setSimTimeToZero();
 
@@ -90,6 +90,7 @@ public class SalonSimulation extends EventCore {
         pracoviskoLicenie = new Pracovisko(pocetKozmeticiek);
 
         zamestnanci.clear();
+        zakaznici.clear();
         for (int i = 0; i < pocetRecepcnych; i++) {
             zamestnanci.add(pracoviskoRecepcia.getZamestnanec(i));
         }
@@ -101,6 +102,8 @@ public class SalonSimulation extends EventCore {
         }
 
         ZakaznikSalonu zakaznikSalonu = new ZakaznikSalonu(randPrichod.nextValue());
+        zakaznici.add(zakaznikSalonu);
+        zakaznikSalonu.setStavZakaznika(StavZakaznika.PRICHOD);
         EventPrichod eventPrichod = new EventPrichod(zakaznikSalonu, zakaznikSalonu.getCasPrichodu(), this);
         this.addToKalendar(eventPrichod);
     }
@@ -112,31 +115,20 @@ public class SalonSimulation extends EventCore {
 
     @Override
     public void afterReplication() {
-        celkovyPriemerCasuVSalone += casStravenyVSalone / statsVykonov[8];
-        celkovaDlzkaCakania += dlzkaCakania / statsVykonov[9];
+        celkovyCasVSalone += casStravenyVSalone / statsVykonov[9];
+        celkovaDlzkaCakaniaRecepcia += dlzkaCakaniaRecepcia / statsVykonov[9];
 
         for (int i = 0; i < statsVykonov.length; i++) {
             statsAllVykonov[i] += statsVykonov[i];
         }
-
     }
 
     @Override
     public void afterReplications() {
-        for (int i = 0; i < statsVykonov.length; i++) {
-            System.out.println(statsNames[i] + ": " + statsAllVykonov[i] / pocetReplikacii);
-        }
-        System.out.println("PriemernyCas: " + celkovyPriemerCasuVSalone / 3600 / pocetReplikacii + " hod");
-        System.out.println("PriemernyCasCakania: " + celkovaDlzkaCakania / 60 / pocetReplikacii + " min");
-
-        //main.set(celkovyPriemerCasuVSalone / 3600 / pocetReplikacii, celkovaDlzkaCakania / 60 / pocetReplikacii);
-
-        for (int i = 0; i < zamestnanci.size(); i++)  {
-            zamestnanci.get(i).setVyuzitie(zamestnanci.get(i).getOdpracovanyCas() / this.getSimTime());
+        for (Zamestnanec zamestnanec : zamestnanci) {
+            zamestnanec.setVyuzitie(zamestnanec.getOdpracovanyCas() / this.getSimTime());
         }
         this.refreshGUI();
-
-        System.out.println();
     }
 
     public PriorityQueue<ZakaznikSalonu> getRadRecepcia() {
@@ -238,4 +230,45 @@ public class SalonSimulation extends EventCore {
     public ArrayList<Zamestnanec> getZamestnanci() {
         return zamestnanci;
     }
+
+    public ArrayList<ZakaznikSalonu> getZakaznici() {
+        return zakaznici;
+    }
+
+    public String[] getStatsNames() {
+        return statsNames;
+    }
+
+    public double[] getStatsAllVykonov() {
+        return statsAllVykonov;
+    }
+
+    public int[] getStatsVykonov() {
+        return statsVykonov;
+    }
+
+    public double getCasStravenyVSalone() {
+        return casStravenyVSalone;
+    }
+
+    public double getCelkovyCasVSalone() {
+        return celkovyCasVSalone;
+    }
+
+    public double getDlzkaCakaniaRecepcia() {
+        return dlzkaCakaniaRecepcia;
+    }
+
+    public double getCelkovaDlzkaCakaniaRecepcia() {
+        return celkovaDlzkaCakaniaRecepcia;
+    }
+
+    public void addCasStravenyVSalone(double casStravenyVSalone) {
+        this.casStravenyVSalone += casStravenyVSalone;
+    }
+
+    public void addDlzkaCakaniaRecepcia(double dlzkaCakaniaRecepcia) {
+        this.dlzkaCakaniaRecepcia += dlzkaCakaniaRecepcia;
+    }
+
 }

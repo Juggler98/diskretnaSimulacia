@@ -3,11 +3,8 @@ package udalostna.salon.pracoviska;
 public class Zamestnanec implements Comparable<Zamestnanec> {
 
     private Double odpracovanyCas = 0.0;
-
     private Double zaciatokObsluhy = 0.0;
-
     private Double vyuzitie = 0.0;
-
     private boolean obsluhuje = false;
 
     Zamestnanec() {
@@ -50,4 +47,5 @@ public class Zamestnanec implements Comparable<Zamestnanec> {
     public int compareTo(Zamestnanec o) {
         return odpracovanyCas.compareTo(o.odpracovanyCas);
     }
+
 }

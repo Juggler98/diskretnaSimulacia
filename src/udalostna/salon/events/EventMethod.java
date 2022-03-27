@@ -3,6 +3,7 @@ package udalostna.salon.events;
 import udalostna.Event;
 import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Pracovisko;
+import udalostna.salon.zakaznik.StavZakaznika;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
 import java.util.Queue;
@@ -47,6 +48,17 @@ public abstract class EventMethod {
             salonSimulation.addToKalendar(event);
         } else {
             rad.add(zakaznikSalonu);
+            switch (eventStartType) {
+                case UCES:
+                    zakaznikSalonu.setStavZakaznika(StavZakaznika.RADUCES);
+                    break;
+                case LICENIE:
+                    zakaznikSalonu.setStavZakaznika(StavZakaznika.RADLICENIE);
+                    break;
+                case RECEPCIA:
+                    zakaznikSalonu.setStavZakaznika(StavZakaznika.RADRECEPCIA);
+                    break;
+            }
         }
     }
 

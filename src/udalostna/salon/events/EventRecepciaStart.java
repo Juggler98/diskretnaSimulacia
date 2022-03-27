@@ -4,6 +4,7 @@ import simCores.EventCore;
 import udalostna.Event;
 import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Zamestnanec;
+import udalostna.salon.zakaznik.StavZakaznika;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
 public class EventRecepciaStart extends Event {
@@ -20,15 +21,18 @@ public class EventRecepciaStart extends Event {
     @Override
     public void vykonaj() {
         double koniecRecepcieTime;
-//        System.out.println(this.getTime() / 3600);
         if (salonSimulation.getPracoviskoRecepcia().jeNiektoVolny()) {
             if (this.zakaznikSalonu.isObsluzeny()) {
                 koniecRecepcieTime = salonSimulation.getRandPlatba().nextValue();
+                zakaznikSalonu.setCasZaciatkuObsluhy(4, this.getTime());
+                zakaznikSalonu.setStavZakaznika(StavZakaznika.PLATBA);
             } else {
-                salonSimulation.statsVykonov[8]++;
+                salonSimulation.getStatsVykonov()[8]++;
                 koniecRecepcieTime = salonSimulation.getRandObjednavka().nextValue();
-                zakaznikSalonu.setCasCakania(this.getTime() - zakaznikSalonu.getCasPrichodu());
-                salonSimulation.dlzkaCakania += zakaznikSalonu.getCasCakania();
+
+                zakaznikSalonu.setCasZaciatkuObsluhy(0, this.getTime());
+                zakaznikSalonu.setStavZakaznika(StavZakaznika.OBJEDNAVKA);
+                salonSimulation.addDlzkaCakaniaRecepcia(this.getTime() - zakaznikSalonu.getCasPrichodu());
             }
             Zamestnanec zamestnanec = salonSimulation.getPracoviskoRecepcia().obsadZamestnanca();
             zamestnanec.setObsluhuje(true);
@@ -37,6 +41,7 @@ public class EventRecepciaStart extends Event {
             salonSimulation.addToKalendar(koniecRecepcie);
         } else {
             salonSimulation.getRadRecepcia().add(zakaznikSalonu);
+            zakaznikSalonu.setStavZakaznika(StavZakaznika.RADRECEPCIA);
         }
     }
 

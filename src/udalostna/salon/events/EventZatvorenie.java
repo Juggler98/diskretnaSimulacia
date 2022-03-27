@@ -3,10 +3,12 @@ package udalostna.salon.events;
 import simCores.EventCore;
 import udalostna.Event;
 import udalostna.salon.SalonSimulation;
+import udalostna.salon.zakaznik.StavZakaznika;
+import udalostna.salon.zakaznik.ZakaznikSalonu;
 
 public class EventZatvorenie extends Event {
 
-    SalonSimulation salonSimulation;
+    private final SalonSimulation salonSimulation;
 
     public EventZatvorenie(double time, EventCore eventCore) {
         super(time, eventCore, "EventZatvorenie");
@@ -15,6 +17,12 @@ public class EventZatvorenie extends Event {
 
     @Override
     public void vykonaj() {
+        for (ZakaznikSalonu z : salonSimulation.getRadRecepcia()) {
+            if (!z.isObsluzeny()) {
+                z.setStavZakaznika(StavZakaznika.OCHOD);
+                z.setCasOdchodu(this.getTime());
+            }
+        }
         salonSimulation.getRadRecepcia().removeIf(z -> !z.isObsluzeny());
     }
 }

@@ -1,53 +1,37 @@
 package udalostna.gui;
 
-import charts.Histogram;
-import charts.LineChart;
 import simCores.EventCore;
-import udalostna.gui.ISimDelegate;
 import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Zamestnanec;
+import udalostna.salon.zakaznik.ZakaznikSalonu;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.util.*;
 
 public class EventGUI extends JFrame implements ISimDelegate {
 
-    private int simulationCount = 0;
     private int iterationCount = 0;
     private int sleepTime = 1000 / 100;
-    private boolean showMedzivysledky = false;
-    private double result;
-    private long hodnota = 0;
-    private LineChart lineChart;
-    private String strategiaStr;
 
-    private int realIterationCount = 1;
-    private int[] histogramHodnoty;
-    private int min = Integer.MAX_VALUE;
-    private int max = Integer.MIN_VALUE;
-
-    private final JTextArea jTextArea;
-    private final JTextArea jTextAreaResults;
     private final JLabel resultLabel;
     private final JLabel replicationLabel;
     private final JButton start;
     private final JButton pause;
     private final JButton stop;
 
-    private JTable[] tables = new JTable[5];
+    private boolean isRunning = false;
 
-    private final Calendar calendar = Calendar.getInstance();
+    private int pocetZakaznikov = 0;
 
-    private Thread t1;
+    private final JTable[] tables = new JTable[5];
 
-    SalonSimulation salonSimulation;
+    private static final Calendar calendar = Calendar.getInstance();
+
+    private SalonSimulation salonSimulation;
 
     public EventGUI() {
         super("Salón krásy");
@@ -57,7 +41,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
         Rectangle bounds = config.getBounds();
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(config);
 
-        final int width = (int) (bounds.width * 0.8);
+        final int width = (int) (bounds.width * 0.6);
         final int height = (int) (bounds.height * 0.8);
         final int buttonWidth = 72;
         final int buttonHeight = 24;
@@ -72,6 +56,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
         start = new JButton("Start");
         stop = new JButton("Stop");
         pause = new JButton("Pause");
+        JButton test = new JButton("Test");
         JTextField pocetOpakovani = new JTextField();
         JTextField[] zamestnanciField = new JTextField[3];
         for (int i = 0; i < 3; i++) {
@@ -84,22 +69,10 @@ public class EventGUI extends JFrame implements ISimDelegate {
         JSpinner spinner = new JSpinner(spinnerListModel);
         spinner.setValue("x100");
 
-        jTextArea = new JTextArea();
-        jTextAreaResults = new JTextArea();
-        JScrollPane jScrollPane = new JScrollPane(jTextArea);
-        JScrollPane jScrollPaneResults = new JScrollPane(jTextAreaResults);
         resultLabel = new JLabel();
         replicationLabel = new JLabel();
         JLabel resultLabelHint = new JLabel("Simulačný čas:");
         JLabel replicationLabelHint = new JLabel("Replikácia č. :");
-        JCheckBox jCheckBoxMedzivysledky = new JCheckBox("Medzivysledky");
-
-        jTextArea.setEditable(false);
-        jTextArea.setToolTipText("Medzi vysledky");
-        jTextAreaResults.setEditable(false);
-        jTextAreaResults.setToolTipText("Vysledky");
-        jScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        jScrollPaneResults.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         pocetOpakovani.setToolTipText("Pocet opakovani");
         zamestnanciField[0].setToolTipText("Recepcne");
@@ -117,9 +90,8 @@ public class EventGUI extends JFrame implements ISimDelegate {
 
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
         JScrollPane[] tablesScrollPane = new JScrollPane[tables.length];
-
-
         for (int i = 0; i < tables.length; i++) {
             tables[i] = new JTable();
             tables[i].setDefaultRenderer(String.class, centerRenderer);
@@ -128,8 +100,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
             tablesScrollPane[i] = new JScrollPane(tables[i]);
             panel.add(tablesScrollPane[i]);
         }
-        tables[0].setModel(new MyTableModel(new String[]{"Pracovisko", "Aktualny rad", "Priemerna dlzka", "Celkova priemerna dlzka"}, new Object[][]{{"Recepcia", 0, 0.0, 0.0}, {"Ucesy", 0, 0.0, 0.0}, {"Licenie", 0, 0.0, 0.0}}));
-
+        tables[0].setModel(new DefaultTableModel(new Object[][]{{"Recepcia", 0, 0.0, 0.0}, {"Ucesy", 0, 0.0, 0.0}, {"Licenie", 0, 0.0, 0.0}}, new String[]{"Pracovisko", "Aktualny rad", "Priemerna dlzka", "Celkova priemerna dlzka"}));
 
         for (int i = 0; i < 4; i++) {
             TableColumn column = tables[0].getColumnModel().getColumn(i);
@@ -140,52 +111,74 @@ public class EventGUI extends JFrame implements ISimDelegate {
             }
         }
 
+        for (int i = 0; i < tables.length; i++) {
+            tables[i].setDefaultRenderer(String.class, centerRenderer);
+            tables[i].setDefaultRenderer(Integer.class, centerRenderer);
+            tables[i].setDefaultRenderer(Double.class, centerRenderer);
+        }
+
 
         start.addActionListener(e -> {
-            this.iterationCount = Integer.parseInt(pocetOpakovani.getText());
-            int recepcne = Integer.parseInt(zamestnanciField[0].getText());
-            int kadernicky = Integer.parseInt(zamestnanciField[1].getText());
-            int kozmeticky = Integer.parseInt(zamestnanciField[2].getText());
+            if (!isRunning) {
+                isRunning = true;
+                start.setEnabled(false);
+                this.iterationCount = Integer.parseInt(pocetOpakovani.getText());
+                int recepcne = Integer.parseInt(zamestnanciField[0].getText());
+                int kadernicky = Integer.parseInt(zamestnanciField[1].getText());
+                int kozmeticky = Integer.parseInt(zamestnanciField[2].getText());
 
-            Object[][] tableData = new Object[recepcne + kadernicky + kozmeticky][6];
-            for (int i = 0; i < recepcne + kadernicky + kozmeticky; i++) {
-                for (int j = 0; j < 6; j++) {
-                    tableData[i][j] = 0.0;
-                    if (j == 1)
-                        tableData[i][j] = " ";
-                    if (i < recepcne && j == 0) {
-                        tableData[i][j] = "Recepčná č. " + (i + 1);
-                    } else if (i < recepcne + kadernicky && j == 0) {
-                        tableData[i][j] = "Kaderníčka č. " + (i + 1 - recepcne);
-                    } else if (j == 0) {
-                        tableData[i][j] = "Kozmetička č. " + (i + 1 - recepcne - kadernicky);
+                Object[][] tableData = new Object[recepcne + kadernicky + kozmeticky][6];
+                for (int i = 0; i < recepcne + kadernicky + kozmeticky; i++) {
+                    for (int j = 0; j < 6; j++) {
+                        tableData[i][j] = 0.0;
+                        if (j == 1)
+                            tableData[i][j] = " ";
+                        if (i < recepcne && j == 0) {
+                            tableData[i][j] = "Recepčná č. " + (i + 1);
+                        } else if (i < recepcne + kadernicky && j == 0) {
+                            tableData[i][j] = "Kaderníčka č. " + (i + 1 - recepcne);
+                        } else if (j == 0) {
+                            tableData[i][j] = "Kozmetička č. " + (i + 1 - recepcne - kadernicky);
+                        }
                     }
                 }
-            }
-            tables[1].setModel(new MyTableModel(new String[]{"Zamestnanec", "Obsluhuje", "Odpracovaný čas", "Využitie", "Priemerné využitie", "Celkové priemerné využitie"}, tableData));
+                tables[1].setModel(new DefaultTableModel(tableData, new String[]{"Zamestnanec", "Obsluhuje", "Odpracovaný čas", "Využitie"}));
+                tables[2].setModel(new DefaultTableModel(null, new String[]{"Zákaznik", "Stav", "Prichod", "Objednávka", "Účes", "Hlbkové čistenie", "Líčenie", "Platba", "Odchod", "Celkový čas"}));
+                tables[2].getColumnModel().getColumn(0).setPreferredWidth(buttonWidth + 40);
+                tables[2].getColumnModel().getColumn(1).setPreferredWidth(buttonWidth + 60);
+                tables[2].getColumnModel().getColumn(3).setPreferredWidth(buttonWidth + 40);
+                tables[2].getColumnModel().getColumn(5).setPreferredWidth(buttonWidth + 60);
+                tables[2].getColumnModel().getColumn(9).setPreferredWidth(buttonWidth + 60);
 
-            for (int i = 0; i < 6; i++) {
-                TableColumn column = tables[1].getColumnModel().getColumn(i);
-                if (i == 0) {
-                    column.setPreferredWidth(buttonWidth + 40);
-                } else if (i == 5) {
-                    column.setPreferredWidth(buttonWidth + 100);
-                } else if (i == 4 || i == 2) {
-                    column.setPreferredWidth(buttonWidth + 60);
-                } else {
-                    column.setPreferredWidth(buttonWidth);
+                pocetZakaznikov = 0;
+
+                for (int i = 0; i < 4; i++) {
+                    TableColumn column = tables[1].getColumnModel().getColumn(i);
+                    if (i == 0) {
+                        column.setPreferredWidth(buttonWidth + 40);
+                    } else if (i == 2) {
+                        column.setPreferredWidth(buttonWidth + 60);
+                    } else {
+                        column.setPreferredWidth(buttonWidth);
+                    }
                 }
-            }
 
-            simulationCount++;
-            salonSimulation = new SalonSimulation((17 - 9) * 3600, recepcne, kadernicky, kozmeticky);
-            salonSimulation.registerDelegate(this);
-            salonSimulation.setSleepTime(sleepTime);
-            t1 = new Thread(new RunnableImpl());
-            t1.start();
-            stop.setEnabled(true);
-            start.setEnabled(false);
-            pause.setEnabled(true);
+                salonSimulation = new SalonSimulation((17 - 9) * 3600, recepcne, kadernicky, kozmeticky);
+                Object[][] tableData2 = new Object[salonSimulation.getStatsNames().length][2];
+                for (int i = 0; i < salonSimulation.getStatsNames().length; i++) {
+                    tableData2[i][0] = salonSimulation.getStatsNames()[i];
+                }
+                tables[3].setModel(new DefaultTableModel(tableData2, new String[]{"Názov", "Hodnota", "Priemerná hodnota"}));
+                tables[3].getColumnModel().getColumn(0).setPreferredWidth(buttonWidth * 2);
+
+                salonSimulation.registerDelegate(this);
+                salonSimulation.setSleepTime(sleepTime);
+
+                SimulationThread simulationThread = new SimulationThread();
+                simulationThread.start();
+                stop.setEnabled(true);
+                pause.setEnabled(true);
+            }
         });
 
         stop.setEnabled(false);
@@ -213,6 +206,11 @@ public class EventGUI extends JFrame implements ISimDelegate {
             }
         });
 
+        test.addActionListener(e ->  {
+            TestThread thread = new TestThread();
+            thread.start();
+        });
+
         pocetOpakovani.addActionListener(e -> this.iterationCount = Integer.parseInt(pocetOpakovani.getText()));
 
         spinner.addChangeListener(e -> {
@@ -230,42 +228,38 @@ public class EventGUI extends JFrame implements ISimDelegate {
             }
         });
 
-        jCheckBoxMedzivysledky.addActionListener(e -> showMedzivysledky = jCheckBoxMedzivysledky.isSelected());
-
         start.setBounds(130, space, buttonWidth, buttonHeight);
         stop.setBounds(130, space + buttonHeight, buttonWidth, buttonHeight);
         pause.setBounds(130, space + buttonHeight * 2, buttonWidth, buttonHeight);
+        test.setBounds(width - space - 80, space, 60, buttonHeight);
 
         for (int i = 0; i < 3; i++) {
             zamestnanciField[i].setBounds(space + 40 * i, space, 40, buttonHeight);
         }
         pocetOpakovani.setBounds(space, space + buttonHeight, 120, buttonHeight);
         spinner.setBounds(space, 2 * space + buttonHeight * 2, buttonWidth - 5, buttonHeight + 10);
-        jScrollPane.setBounds((width - width / 4) - (100 / 2) - 20, space + buttonHeight * 6 + 16, 100, 140);
         resultLabelHint.setBounds((width / 4) - (buttonWidth / 2), space + buttonHeight + 1, buttonWidth + 20, buttonHeight);
         resultLabel.setBounds((width / 4) - (buttonWidth / 2) + buttonWidth + 20, space + buttonHeight + 1, buttonWidth * 2, buttonHeight);
         replicationLabelHint.setBounds((width / 4) - (buttonWidth / 2), space + 1, buttonWidth + 20, buttonHeight);
         replicationLabel.setBounds((width / 4) - (buttonWidth / 2) + buttonWidth + 20, space + 1, buttonWidth * 2, buttonHeight);
-        jScrollPaneResults.setBounds(space * 3, space + buttonHeight * 6 + 16, 300, 140);
-        jCheckBoxMedzivysledky.setBounds((width - width / 4) - (100 / 2) + 100 - 16, space + buttonHeight * 6 + 16, 116, 140);
-        tablesScrollPane[0].setBounds(600, 600, 480, 72);
-        tablesScrollPane[1].setBounds(0, 400, 640, 220);
+        tablesScrollPane[0].setBounds(space, space + buttonHeight * 5, 480, 72);
+        tablesScrollPane[1].setBounds(space, space * 4 + buttonHeight * 5 + 72, 480, 232);
+        tablesScrollPane[2].setBounds(space, space * 8 + buttonHeight * 5 + 72 + 232, 840, 300);
+        tablesScrollPane[3].setBounds(space * 4 + 480, space + buttonHeight * 5, 360, 216);
 
         panel.add(pocetOpakovani);
         panel.add(start);
         panel.add(stop);
         panel.add(pause);
+        panel.add(test);
         panel.add(spinner);
         for (int i = 0; i < 3; i++) {
             panel.add(zamestnanciField[i]);
         }
-        panel.add(jScrollPane);
         panel.add(resultLabel);
         panel.add(resultLabelHint);
         panel.add(replicationLabelHint);
         panel.add(replicationLabel);
-        panel.add(jScrollPaneResults);
-        panel.add(jCheckBoxMedzivysledky);
 
         setContentPane(panel);
 
@@ -274,6 +268,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
         setLocation(x, y);
 
         this.setVisible(true);
+
     }
 
     private void stop() {
@@ -287,121 +282,40 @@ public class EventGUI extends JFrame implements ISimDelegate {
             pause.setEnabled(false);
             stop.setEnabled(false);
         }
+        isRunning = false;
     }
 
-    public void prepare(int n) {
-        strategiaStr = "error";
-        lineChart = new LineChart("Simulacia c. " + simulationCount + " - Strategia " + "\"" + strategiaStr + "\"");
-        lineChart.pack();
-        lineChart.setVisible(true);
-
-        jTextArea.setText("");
-        resultLabel.setText("");
-
-        hodnota = 0;
-        realIterationCount = 1;
-        histogramHodnoty = new int[n + 1];
-        min = Integer.MAX_VALUE;
-        max = Integer.MIN_VALUE;
-    }
-
-    public void calculate(int medziVysledok, int iteration) {
-        hodnota += medziVysledok;
-        result = hodnota * 1.0 / iteration;
-
-        if (medziVysledok > histogramHodnoty.length) {
-            histogramHodnoty[0]++;
-        } else {
-            histogramHodnoty[medziVysledok]++;
-        }
-
-//        if (medziVysledok > max && medziVysledok < 3 * n) {
-//            max = medziVysledok;
-//        }
-
-        if (showMedzivysledky)
-            jTextArea.append(medziVysledok + "\n");
-
-//        if (iteration >= iterationCount / 100.0 * gapPercentStart) {
-//            if (iteration % gap == 0) {
-//                lineChart.addPoint(iteration, result);
-//            }
-//        }
-
-        resultLabel.setText(result + "");
-
-        if (sleepTime > 0) {
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+    private void test() {
+        int min = Integer.MAX_VALUE;
+        int minI = Integer.MAX_VALUE;
+        int minJ = Integer.MAX_VALUE;
+        int minK = Integer.MAX_VALUE;
+        for (int i = 1; i <= 10; i++) {
+            for (int j = 1; j <= 10; j++) {
+                for (int k = 1; k <= 10; k++) {
+                    SalonSimulation salonSimulation = new SalonSimulation((17 - 9) * 3600, i, j, k);
+                    salonSimulation.simulate(100);
+                    if (salonSimulation.getCelkovyCasVSalone() / 3600 / salonSimulation.getPocetReplikacii() <= 3 && salonSimulation.getCelkovaDlzkaCakaniaRecepcia() / 60 / salonSimulation.getPocetReplikacii() <= 4) {
+                        if (i + j + k < min) {
+                            min = i + j + k;
+                            minI = i;
+                            minJ = j;
+                            minK = k;
+                        }
+                    }
+                }
             }
         }
-        realIterationCount = iteration;
-    }
-
-    public void showResults() {
-        //String text = String.format("---Simulacia c. %d---\nn: %d\nPocet iteracii: %d\nStrategia: %d (%s)\nVysledok: %f\n\n", simulationCount, n, realIterationCount, strategia, strategiaStr, result);
-        //jTextAreaResults.append(text);
-        resultLabel.setText(result + "");
-        //jTextAreaResults.setCaretPosition(jTextAreaResults.getDocument().getLength());
-        final Histogram histogram = new Histogram("Simulacia c. " + simulationCount + " - Strategia " + "\"" + strategiaStr + "\"", histogramHodnoty, min, max);
-        histogram.pack();
-        histogram.setVisible(true);
-    }
-
-    class MyTableModel extends AbstractTableModel {
-        String[] columnNames;
-        Object[][] data;
-
-        public MyTableModel(String[] columnNames, Object[][] data) {
-            this.columnNames = columnNames;
-            this.data = data;
-        }
-
-        public int getColumnCount() {
-            return columnNames.length;
-        }
-
-        public int getRowCount() {
-            return data.length;
-        }
-
-        public String getColumnName(int col) {
-            return columnNames[col];
-        }
-
-        public Object getValueAt(int row, int col) {
-            return data[row][col];
-        }
-
-        public Class getColumnClass(int c) {
-            return getValueAt(0, c).getClass();
-        }
-
-        /*
-         * Don't need to implement this method unless your table's
-         * data can change.
-         */
-        public void setValueAt(Object value, int row, int col) {
-            data[row][col] = value;
-            fireTableCellUpdated(row, col);
-        }
+        JOptionPane.showMessageDialog(null, String.format("Best solution: %d %d %d\n", minI, minJ, minK));
     }
 
     @Override
     public void refresh(EventCore eventCore) {
         SalonSimulation salonSimulation = (SalonSimulation) eventCore;
-//        System.out.println(eventCore.getSimTime());
         if (!salonSimulation.isRun()) {
             this.stop();
         }
-        calendar.set(0, Calendar.JANUARY, 0, 9, 0, 0);
-        calendar.add(Calendar.SECOND, (int) eventCore.getSimTime());
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        int second = calendar.get(Calendar.SECOND);
-        resultLabel.setText((hour < 10 ? "" + 0 + hour : hour) + ":" + (minute < 10 ? "" + 0 + minute : minute) + ":" + (second < 10 ? "" + 0 + second : second));
+        resultLabel.setText(getTime((int) eventCore.getSimTime(), 9));
         replicationLabel.setText(salonSimulation.getPocetReplikacii() + "");
 
         if (salonSimulation.getSleepTime() != 0 || !salonSimulation.isRun()) {
@@ -409,28 +323,80 @@ public class EventGUI extends JFrame implements ISimDelegate {
             tables[0].getModel().setValueAt(salonSimulation.getRadUces().size(), 1, 1);
             tables[0].getModel().setValueAt(salonSimulation.getRadLicenie().size(), 2, 1);
 
+            if (salonSimulation.getZakaznici().size() == 0 && pocetZakaznikov > 0) {
+                tables[2].setModel(new DefaultTableModel(null, new String[]{"Zákaznik", "Stav", "Prichod", "Objednávka", "Účes", "Hlbkové čistenie", "Líčenie", "Platba", "Odchod", "Celkový čas"}));
+                pocetZakaznikov = 0;
+            }
+
             for (int i = 0; i < salonSimulation.getZamestnanci().size(); i++) {
                 Zamestnanec zamestnanec = salonSimulation.getZamestnanci().get(i);
-                calendar.set(0, Calendar.JANUARY, 0, 0, 0, 0);
-                calendar.add(Calendar.SECOND, (int) zamestnanec.getOdpracovanyCas());
-                hour = calendar.get(Calendar.HOUR_OF_DAY);
-                minute = calendar.get(Calendar.MINUTE);
-                second = calendar.get(Calendar.SECOND);
-                tables[1].getModel().setValueAt((hour < 10 ? "" + 0 + hour : hour) + ":" + (minute < 10 ? "" + 0 + minute : minute) + ":" + (second < 10 ? "" + 0 + second : second), i, 2);
-
+                tables[1].getModel().setValueAt(getTime((int) zamestnanec.getOdpracovanyCas(), 0), i, 2);
                 tables[1].getModel().setValueAt(zamestnanec.isObsluhuje() ? "X" : "", i, 1);
-
                 tables[1].getModel().setValueAt(Math.round(zamestnanec.getVyuzitie() * 100 * 100) / 100.0, i, 3);
-
             }
-        }
 
-        //System.out.println(salonSimulation.getRadRecepcia().size());
+            for (int i = 0; i < salonSimulation.getZakaznici().size(); i++) {
+                ZakaznikSalonu zakaznikSalonu = salonSimulation.getZakaznici().get(i);
+                if (pocetZakaznikov < salonSimulation.getZakaznici().size()) {
+                    for (int j = pocetZakaznikov; j < salonSimulation.getZakaznici().size(); j++) {
+                        DefaultTableModel model = (DefaultTableModel) tables[2].getModel();
+                        model.addRow(new Object[]{"Zákazník č. " + ++pocetZakaznikov});
+                    }
+
+                }
+                tables[2].getModel().setValueAt(zakaznikSalonu.getStavZakaznika(), i, 1);
+
+                if (zakaznikSalonu.getCasPrichodu() > 0) {
+                    tables[2].getModel().setValueAt(getTime((int) zakaznikSalonu.getCasPrichodu(), 9), i, 2);
+                }
+
+                if (zakaznikSalonu.getCasOdchodu() > 0) {
+                    tables[2].getModel().setValueAt(getTime((int) zakaznikSalonu.getCasOdchodu(), 9), i, 8);
+                    tables[2].getModel().setValueAt(getTime((int) (zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu()), 0), i, 9);
+                }
+
+                tables[2].getModel().setValueAt(zakaznikSalonu.getStavZakaznika(), i, 1);
+
+                for (int j = 0; j < 5; j++) {
+                    if (zakaznikSalonu.getCasZaciatkuObsluhy(j) > 0) {
+                        tables[2].getModel().setValueAt(getTime((int) zakaznikSalonu.getCasZaciatkuObsluhy(j), 9), i, 3 + j);
+                    }
+                }
+            }
+
+            for (int i = 0; i < salonSimulation.getStatsNames().length - 2; i++) {
+                tables[3].getModel().setValueAt(salonSimulation.getStatsVykonov()[i], i, 1);
+                tables[3].getModel().setValueAt(salonSimulation.getStatsAllVykonov()[i] / salonSimulation.getPocetReplikacii(), i, 2);
+            }
+            tables[3].getModel().setValueAt(getTime((int) (salonSimulation.getDlzkaCakaniaRecepcia() / salonSimulation.getStatsVykonov()[9]), 0), 10, 1);
+            tables[3].getModel().setValueAt(getTime((int) (salonSimulation.getCelkovaDlzkaCakaniaRecepcia() / salonSimulation.getPocetReplikacii()), 0), 10, 2);
+
+            tables[3].getModel().setValueAt(getTime((int) (salonSimulation.getCasStravenyVSalone() / salonSimulation.getStatsVykonov()[9]), 0), 11, 1);
+            tables[3].getModel().setValueAt(getTime((int) (salonSimulation.getCelkovyCasVSalone() / salonSimulation.getPocetReplikacii()), 0), 11, 2);
+
+        }
     }
 
-    private class RunnableImpl implements Runnable {
+    private static String getTime(int seconds, int startHour) {
+        calendar.set(0, Calendar.JANUARY, 0, startHour, 0, 0);
+        calendar.add(Calendar.SECOND, seconds);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        return (hour < 10 ? "" + 0 + hour : hour) + ":" + (minute < 10 ? "" + 0 + minute : minute) + ":" + (second < 10 ? "" + 0 + second : second);
+    }
+
+    private class SimulationThread extends Thread {
+        @Override
         public void run() {
             salonSimulation.simulate(iterationCount);
+        }
+    }
+
+    private class TestThread extends Thread {
+        @Override
+        public void run() {
+            test();
         }
     }
 

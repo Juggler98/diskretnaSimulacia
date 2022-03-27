@@ -22,11 +22,10 @@ public class EventUcesEnd extends Event {
 
     @Override
     public void vykonaj() {
-        //System.out.println(this);
         if (zakaznikSalonu.getTypZakaznika() == TypZakaznika.UCESAJLICENIE) {
-            salonSimulation.statsVykonov[5]++;
+            salonSimulation.getStatsVykonov()[5]++;
         } else {
-            salonSimulation.statsVykonov[1]++;
+            salonSimulation.getStatsVykonov()[1]++;
         }
         zamestnanec.setObsluhuje(false);
         zamestnanec.addOdpracovanyCas(this.getTime() - zamestnanec.getZaciatokObsluhy());
@@ -42,7 +41,6 @@ public class EventUcesEnd extends Event {
                 EventMethod.planStart(salonSimulation, salonSimulation.getRadRecepcia(), salonSimulation.getPracoviskoRecepcia(), EventStartType.RECEPCIA, this.getTime());
             }
         }
-
     }
 
 }

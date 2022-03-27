@@ -15,7 +15,6 @@ public class EventSystem extends Event {
 
     @Override
     public void vykonaj() {
-        //System.out.println(this);
         if (salonSimulation.getKalendarSize() > 0) {
             int sleepTime = salonSimulation.getSleepTime();
             if (sleepTime > 0) {

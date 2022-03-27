@@ -4,6 +4,7 @@ import simCores.EventCore;
 import udalostna.Event;
 import udalostna.salon.SalonSimulation;
 import udalostna.salon.pracoviska.Zamestnanec;
+import udalostna.salon.zakaznik.StavZakaznika;
 import udalostna.salon.zakaznik.TypZakaznika;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
@@ -22,23 +23,23 @@ public class EventRecepciaEnd extends Event {
 
     @Override
     public void vykonaj() {
-//        System.out.println(this);
         if (!this.zakaznikSalonu.isObsluzeny()) {
             double percentage = salonSimulation.getRandPercentageTypZakaznika().nextDouble();
             if (percentage < 0.2) {
                 zakaznikSalonu.setTypZakaznika(TypZakaznika.UCES);
-                salonSimulation.statsVykonov[0]++;
+                salonSimulation.getStatsVykonov()[0]++;
             } else if (percentage < 0.35) {
-                salonSimulation.statsVykonov[2]++;
+                salonSimulation.getStatsVykonov()[2]++;
                 zakaznikSalonu.setTypZakaznika(TypZakaznika.LICENIE);
             } else {
-                salonSimulation.statsVykonov[4]++;
+                salonSimulation.getStatsVykonov()[4]++;
                 zakaznikSalonu.setTypZakaznika(TypZakaznika.UCESAJLICENIE);
             }
             if (zakaznikSalonu.getTypZakaznika() == TypZakaznika.LICENIE || zakaznikSalonu.getTypZakaznika() == TypZakaznika.UCESAJLICENIE) {
                 double percentage2 = salonSimulation.getRandPercentageCiseniePleti().nextDouble();
                 if (percentage2 < 0.35) {
-                    salonSimulation.statsVykonov[6]++;
+                    salonSimulation.getStatsVykonov()[6]++;
+                    zakaznikSalonu.setGoToHlbkoveLicenie(true);
                     zakaznikSalonu.setHlbkoveLicenie(true);
                 }
             }
@@ -49,11 +50,10 @@ public class EventRecepciaEnd extends Event {
             }
             zakaznikSalonu.setObsluzeny();
         } else {
-//            System.out.println(zakaznikSalonu);
             zakaznikSalonu.setCasOdchodu(this.getTime());
-            double cas = (zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu()) / 3600;
-            salonSimulation.casStravenyVSalone += zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu();
-            salonSimulation.statsVykonov[9]++;
+            zakaznikSalonu.setStavZakaznika(StavZakaznika.OCHOD);
+            salonSimulation.addCasStravenyVSalone(zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu());
+            salonSimulation.getStatsVykonov()[9]++;
         }
         zamestnanec.setObsluhuje(false);
         zamestnanec.addOdpracovanyCas(this.getTime() - zamestnanec.getZaciatokObsluhy());

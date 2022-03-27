@@ -1,28 +1,34 @@
 package udalostna.salon.zakaznik;
 
+import java.util.Arrays;
+
 public class ZakaznikSalonu implements Comparable<ZakaznikSalonu> {
 
     private final double casPrichodu;
     private double casOdchodu;
-    private double casCakania;
+    private final double[] casZaciatkuObsluhy = new double[5]; //Objednavka, Uces, HlbkoveCistenie, Licenie,  Platba
+    private StavZakaznika stavZakaznika;
+
     private boolean obsluzeny = false;
     private TypZakaznika typZakaznika;
     private boolean hlbkoveLicenie = false;
+    private boolean goToHlbkoveLicenie = false;
 
     public ZakaznikSalonu(double casPrichodu) {
         this.casPrichodu = casPrichodu;
+        Arrays.fill(casZaciatkuObsluhy, 0.0);
     }
 
     public double getCasPrichodu() {
         return casPrichodu;
     }
 
-    public void setCasCakania(double casCakania) {
-        this.casCakania = casCakania;
+    public void setCasZaciatkuObsluhy(int i, double casCakania) {
+        this.casZaciatkuObsluhy[i] = casCakania;
     }
 
-    public double getCasCakania() {
-        return casCakania;
+    public double getCasZaciatkuObsluhy(int i) {
+        return casZaciatkuObsluhy[i];
     }
 
     public boolean isObsluzeny() {
@@ -37,16 +43,24 @@ public class ZakaznikSalonu implements Comparable<ZakaznikSalonu> {
         return typZakaznika;
     }
 
+    public boolean isGoToHlbkoveLicenie() {
+        return goToHlbkoveLicenie;
+    }
+
     public boolean isHlbkoveLicenie() {
         return hlbkoveLicenie;
+    }
+
+    public void setHlbkoveLicenie(boolean hlbkoveLicenie) {
+        this.hlbkoveLicenie = hlbkoveLicenie;
     }
 
     public void setTypZakaznika(TypZakaznika typZakaznika) {
         this.typZakaznika = typZakaznika;
     }
 
-    public void setHlbkoveLicenie(boolean hlbkoveLicenie) {
-        this.hlbkoveLicenie = hlbkoveLicenie;
+    public void setGoToHlbkoveLicenie(boolean goToHlbkoveLicenie) {
+        this.goToHlbkoveLicenie = goToHlbkoveLicenie;
     }
 
     public double getCasOdchodu() {
@@ -55,6 +69,14 @@ public class ZakaznikSalonu implements Comparable<ZakaznikSalonu> {
 
     public void setCasOdchodu(double casOdchodu) {
         this.casOdchodu = casOdchodu;
+    }
+
+    public void setStavZakaznika(StavZakaznika stavZakaznika) {
+        this.stavZakaznika = stavZakaznika;
+    }
+
+    public StavZakaznika getStavZakaznika() {
+        return stavZakaznika;
     }
 
     @Override
@@ -72,11 +94,10 @@ public class ZakaznikSalonu implements Comparable<ZakaznikSalonu> {
     public String toString() {
         return "ZakaznikSalonu{" +
                 "casPrichodu=" + casPrichodu +
-                " casPrichodu=" + casPrichodu / 3600 +
-                ", casCakania=" + casCakania +
+                " casPrichodu=" + casPrichodu / 3600 + " hod" +
                 ", obsluzeny=" + obsluzeny +
                 ", typZakaznika=" + typZakaznika +
-                ", hlbkoveLicenie=" + hlbkoveLicenie +
+                ", hlbkoveLicenie=" + goToHlbkoveLicenie +
                 '}';
     }
 }
