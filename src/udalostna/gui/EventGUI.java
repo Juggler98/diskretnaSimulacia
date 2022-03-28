@@ -101,7 +101,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
             tablesScrollPane[i] = new JScrollPane(tables[i]);
             panel.add(tablesScrollPane[i]);
         }
-        tables[0].setModel(new DefaultTableModel(new Object[][]{{"Recepcia", 0, 0.0, 0.0}, {"Ucesy", 0, 0.0, 0.0}, {"Licenie", 0, 0.0, 0.0}}, new String[]{"Pracovisko", "Aktualny rad", "Priemerna dlzka", "Celkova priemerna dlzka"}));
+        tables[0].setModel(new DefaultTableModel(new Object[][]{{"Recepcia", 0, 0.0, 0.0}, {"Ucesy", 0}, {"Licenie", 0}}, new String[]{"Pracovisko", "Aktualny rad", "Priemerna dlzka", "Celkova priemerna dlzka"}));
 
         for (int i = 0; i < 4; i++) {
             TableColumn column = tables[0].getColumnModel().getColumn(i);
