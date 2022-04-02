@@ -24,6 +24,7 @@ public class EventRecepciaEnd extends Event {
     @Override
     public void vykonaj() {
         if (!this.zakaznikSalonu.isObsluzeny()) {
+            salonSimulation.incPocetObsluhovanychRecepcia(-1);
             double percentage = salonSimulation.getRandPercentageTypZakaznika().nextDouble();
             if (percentage < 0.2) {
                 zakaznikSalonu.setTypZakaznika(TypZakaznika.UCES);
@@ -48,18 +49,20 @@ public class EventRecepciaEnd extends Event {
             } else {
                 EventMethod.obsluhaOrRad(salonSimulation, salonSimulation.getRadUces(), salonSimulation.getPracoviskoUcesy(), EventStartType.UCES, this.getTime(), zakaznikSalonu);
             }
-            zakaznikSalonu.setObsluzeny();
         } else {
             zakaznikSalonu.setCasOdchodu(this.getTime());
             zakaznikSalonu.setStavZakaznika(StavZakaznika.ODCHOD);
-            salonSimulation.addCasStravenyVSalone(zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu());
+            salonSimulation.addCas(0, zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu());
+            salonSimulation.getChikvadrat()[0] += Math.pow(zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu(), 2);
+            salonSimulation.getChikvadrat()[1] += zakaznikSalonu.getCasOdchodu() - zakaznikSalonu.getCasPrichodu();
+            salonSimulation.incN();
             salonSimulation.getStatsVykonov()[9]++;
         }
         zamestnanec.setObsluhuje(false);
         zamestnanec.addOdpracovanyCas(this.getTime() - zamestnanec.getZaciatokObsluhy());
         zamestnanec.setVyuzitie(zamestnanec.getOdpracovanyCas() / salonSimulation.getSimTime());
         salonSimulation.getPracoviskoRecepcia().uvolniZamestnanca(zamestnanec);
-        if ((this.getTime() <= salonSimulation.getEndTime() && salonSimulation.getDlzkaRaduUcesyLicenie() <= 10) || (!salonSimulation.getRadRecepcia().isEmpty() && salonSimulation.getRadRecepcia().peek().isObsluzeny())) {
+        if ((this.getTime() <= salonSimulation.getEndTime() && salonSimulation.getDlzkaRaduUcesyLicenie() + salonSimulation.getPocetObsluhovanychRecepcia() <= 10) || (!salonSimulation.getRadRecepcia().isEmpty() && salonSimulation.getRadRecepcia().peek().isObsluzeny())) {
             EventMethod.planStart(salonSimulation, salonSimulation.getRadRecepcia(), salonSimulation.getPracoviskoRecepcia(), EventStartType.RECEPCIA, this.getTime());
         }
     }

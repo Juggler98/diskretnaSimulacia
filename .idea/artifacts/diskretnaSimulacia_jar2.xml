@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="diskretnaSimulacia:jar2">
+    <output-path>$PROJECT_DIR$/out/artifacts/diskretnaSimulacia_jar2</output-path>
+    <root id="archive" name="diskretnaSimulacia.jar">
+      <element id="module-output" name="diskretnaSimulacia" />
+      <element id="extracted-dir" path="$USER_HOME$/Desktop/jfreechart-demo-1.5.2-jar-with-dependencies.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

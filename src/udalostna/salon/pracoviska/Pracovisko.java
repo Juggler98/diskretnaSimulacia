@@ -6,6 +6,7 @@ public class Pracovisko {
 
     private final PriorityQueue<Zamestnanec> volnyZamestnanci = new PriorityQueue<>();
     private final Zamestnanec[] zamestnanci;
+    private double lastRadChange;
 
     public Pracovisko(int pocetZamestnancov) {
         zamestnanci = new Zamestnanec[pocetZamestnancov];
@@ -35,4 +36,11 @@ public class Pracovisko {
         return zamestnanci[i];
     }
 
+    public double getLastRadChange() {
+        return lastRadChange;
+    }
+
+    public void setLastRadChange(double lastRadChange) {
+        this.lastRadChange = lastRadChange;
+    }
 }

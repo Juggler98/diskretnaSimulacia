@@ -21,7 +21,7 @@ public abstract class EventCore extends MonteCarlo {
 
     }
 
-    public void simulateEvents(double endTime) {
+    public synchronized void simulateEvents(double endTime) {
         simTime = 0;
         stopped = false;
         EventSystem eventSystem = new EventSystem(simTime, this);

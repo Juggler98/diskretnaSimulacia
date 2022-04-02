@@ -23,6 +23,8 @@ public class EventZatvorenie extends Event {
                 z.setCasOdchodu(this.getTime());
             }
         }
+        salonSimulation.addDlzkaRadu(0,salonSimulation.getRadRecepcia().size() * (getTime() - salonSimulation.getPracoviskoRecepcia().getLastRadChange()));
+        salonSimulation.getPracoviskoRecepcia().setLastRadChange(getTime());
         salonSimulation.getRadRecepcia().removeIf(z -> !z.isObsluzeny());
     }
 }

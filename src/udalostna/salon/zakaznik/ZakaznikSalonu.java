@@ -8,15 +8,17 @@ public class ZakaznikSalonu implements Comparable<ZakaznikSalonu> {
     private double casOdchodu;
     private final double[] casZaciatkuObsluhy = new double[5]; //Objednavka, Uces, HlbkoveCistenie, Licenie,  Platba
     private StavZakaznika stavZakaznika;
+    private final int poradie;
 
     private boolean obsluzeny = false;
     private TypZakaznika typZakaznika;
     private boolean hlbkoveLicenie = false;
     private boolean goToHlbkoveLicenie = false;
 
-    public ZakaznikSalonu(double casPrichodu) {
+    public ZakaznikSalonu(double casPrichodu, int poradie) {
         this.casPrichodu = casPrichodu;
         Arrays.fill(casZaciatkuObsluhy, 0.0);
+        this.poradie = poradie;
     }
 
     public double getCasPrichodu() {
@@ -79,6 +81,10 @@ public class ZakaznikSalonu implements Comparable<ZakaznikSalonu> {
         return stavZakaznika;
     }
 
+    public int getPoradie() {
+        return poradie;
+    }
+
     @Override
     public int compareTo(ZakaznikSalonu o) {
         if (obsluzeny && o.obsluzeny)
@@ -94,10 +100,14 @@ public class ZakaznikSalonu implements Comparable<ZakaznikSalonu> {
     public String toString() {
         return "ZakaznikSalonu{" +
                 "casPrichodu=" + casPrichodu +
-                " casPrichodu=" + casPrichodu / 3600 + " hod" +
+                ", casOdchodu=" + casOdchodu +
+                ", casZaciatkuObsluhy=" + Arrays.toString(casZaciatkuObsluhy) +
+                ", stavZakaznika=" + stavZakaznika +
+                ", poradie=" + poradie +
                 ", obsluzeny=" + obsluzeny +
                 ", typZakaznika=" + typZakaznika +
-                ", hlbkoveLicenie=" + goToHlbkoveLicenie +
+                ", hlbkoveLicenie=" + hlbkoveLicenie +
+                ", goToHlbkoveLicenie=" + goToHlbkoveLicenie +
                 '}';
     }
 }

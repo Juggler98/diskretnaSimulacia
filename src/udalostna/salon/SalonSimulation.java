@@ -3,6 +3,7 @@ package udalostna.salon;
 import generators.*;
 import simCores.EventCore;
 import udalostna.salon.events.EventPrichod;
+import udalostna.salon.events.EventZatvorenie;
 import udalostna.salon.pracoviska.Pracovisko;
 import udalostna.salon.pracoviska.Zamestnanec;
 import udalostna.salon.zakaznik.StavZakaznika;
@@ -21,13 +22,13 @@ public class SalonSimulation extends EventCore {
     private final RandUniformContinuous randObjednavka = new RandUniformContinuous(200 - 120, 200 + 120, seedGenerator);
     private final RandTriangular randHlbkoveCistenie = new RandTriangular(360, 900, 540, seedGenerator);
     private final RandUniformContinuous randPlatba = new RandUniformContinuous(180 - 50, 180 + 50, seedGenerator);
-    private final RandUniformDiscrete randUcesJednoduchy = new RandUniformDiscrete(10 * 60, 30 * 60, seedGenerator);
-    private final EmpiricDiscrete[] empiricDiscretesUcesZlozity = {new EmpiricDiscrete(30 * 60, 60 * 60, 0.4), new EmpiricDiscrete(61 * 60, 120 * 60, 0.6)};
+    private final RandUniformDiscrete randUcesJednoduchy = new RandUniformDiscrete(10, 30, seedGenerator);
+    private final EmpiricDiscrete[] empiricDiscretesUcesZlozity = {new EmpiricDiscrete(30, 60, 0.4), new EmpiricDiscrete(61, 120, 0.6)};
     private final RandEmpiricDiscrete randUcesZlozity = new RandEmpiricDiscrete(empiricDiscretesUcesZlozity, seedGenerator);
-    private final EmpiricDiscrete[] empiricDiscretesUcesSvadobny = {new EmpiricDiscrete(50 * 60, 60 * 60, 0.2), new EmpiricDiscrete(61 * 60, 100 * 60, 0.3), new EmpiricDiscrete(101 * 60, 150 * 60, 0.5)};
+    private final EmpiricDiscrete[] empiricDiscretesUcesSvadobny = {new EmpiricDiscrete(50, 60, 0.2), new EmpiricDiscrete(61, 100, 0.3), new EmpiricDiscrete(101, 150, 0.5)};
     private final RandEmpiricDiscrete randUcesSvadobny = new RandEmpiricDiscrete(empiricDiscretesUcesSvadobny, seedGenerator);
-    private final RandUniformDiscrete randLicenieJednoduche = new RandUniformDiscrete(10 * 60, 25 * 60, seedGenerator);
-    private final RandUniformDiscrete randLicenieZlozite = new RandUniformDiscrete(20 * 60, 100 * 60, seedGenerator);
+    private final RandUniformDiscrete randLicenieJednoduche = new RandUniformDiscrete(10, 25, seedGenerator);
+    private final RandUniformDiscrete randLicenieZlozite = new RandUniformDiscrete(20, 100, seedGenerator);
     private final Random randPercentageTypZakaznika = new Random(seedGenerator.nextLong());
     private final Random randPercentageCiseniePleti = new Random(seedGenerator.nextLong());
     private final Random randPercentageTypUcesu = new Random(seedGenerator.nextLong());
@@ -45,20 +46,22 @@ public class SalonSimulation extends EventCore {
 
     private final int[] statsVykonov = new int[10];
     private final double[] statsAllVykonov = new double[10];
-    private final String[] statsNames = {"Zadané účesy", "Spravené účesy", "Zadané Líčenia", "Spravené Líčenia", "Zadané účesy aj líčenia", "Spravené účesy aj líčenia", "Zadané čistenia", "Spravené čistenia", "Zadané objednávky", "Dokončené objednávky", "Čas na objednávku", "Čas v sálone"};
+    private final String[] statsNames = {"Zadané účesy", "Spravené účesy", "Zadané Líčenia", "Spravené Líčenia", "Zadané účesy aj líčenia", "Spravené účesy aj líčenia", "Zadané čistenia", "Spravené čistenia", "Zadané objednávky", "Dokončené objednávky", "Čas na objednávku", "Čas v sálone", "Čas účesu"};
 
-    private double casStravenyVSalone = 0;
-    private double celkovyCasVSalone = 0;
+    private final double[] casy = new double[5]; //casStravenyVSalone, dlzkaCakaniaNaObjednavku, robenieUcesov
+    private final double[] celkoveCasy = new double[5];
 
-    private double dlzkaCakaniaRecepcia = 0;
-    private double celkovaDlzkaCakaniaRecepcia = 0;
+    private final double[] dlzkyRadov = new double[3]; //recepcia, ucesy, licenie
+    private final double[] celkoveDlzkyRadov = new double[3];
 
-    private double dlzkaRaduRecepcia = 0;
-    private double celkovaDlzkaRaduRecepcia = 0;
+    private final double[] chikvadrat = new double[2];
+    private int n = 0;
 
     private final int pocetRecepcnych;
     private final int pocetKadernicok;
     private final int pocetKozmeticiek;
+
+    private int pocetObsluhovanychRecepcia = 0;
 
     public SalonSimulation(int endTime, int pocetRecepcnych, int pocetKadernicok, int pocetKozmeticiek) {
         this.endTime = endTime;
@@ -73,18 +76,17 @@ public class SalonSimulation extends EventCore {
     }
 
     @Override
-    public void beforeReplication() {
-        pocetReplikacii++;
+    public synchronized void beforeReplication() {
 
         radRecepcia.clear();
         radLicenie.clear();
         radUces.clear();
 
         Arrays.fill(statsVykonov, 0);
+        Arrays.fill(casy, 0);
+        Arrays.fill(dlzkyRadov, 0);
 
-        casStravenyVSalone = 0;
-        dlzkaCakaniaRecepcia = 0;
-        dlzkaRaduRecepcia = 0;
+        pocetObsluhovanychRecepcia = 0;
 
         this.setSimTimeToZero();
 
@@ -104,30 +106,38 @@ public class SalonSimulation extends EventCore {
             zamestnanci.add(pracoviskoLicenie.getZamestnanec(i));
         }
 
-        ZakaznikSalonu zakaznikSalonu = new ZakaznikSalonu(randPrichod.nextValue());
+        ZakaznikSalonu zakaznikSalonu = new ZakaznikSalonu(randPrichod.nextValue(), 1);
         zakaznici.add(zakaznikSalonu);
         zakaznikSalonu.setStavZakaznika(StavZakaznika.PRICHOD);
         EventPrichod eventPrichod = new EventPrichod(zakaznikSalonu, zakaznikSalonu.getCasPrichodu(), this);
+        EventZatvorenie zatvorenie = new EventZatvorenie(getEndTime() + 1, this);
+        addToKalendar(zatvorenie);
         this.addToKalendar(eventPrichod);
     }
 
     @Override
-    public void replication() {
+    public synchronized void replication() {
         this.simulateEvents(0);
     }
 
     @Override
     public void afterReplication() {
-        celkovyCasVSalone += casStravenyVSalone / statsVykonov[9];
-        celkovaDlzkaCakaniaRecepcia += dlzkaCakaniaRecepcia / statsVykonov[9];
+        celkoveCasy[0] += casy[0] / statsVykonov[9];
+        celkoveCasy[1] += casy[1] / statsVykonov[9];
+        celkoveCasy[2] += casy[2] / (statsVykonov[0] + statsVykonov[4]);
 
-        if (dlzkaCakaniaRecepcia != 0) {
-            celkovaDlzkaRaduRecepcia += dlzkaRaduRecepcia / dlzkaCakaniaRecepcia;
-        }
+        if (pracoviskoRecepcia.getLastRadChange() != 0)
+            celkoveDlzkyRadov[0] += dlzkyRadov[0] / (getEndTime() + 1);
+        if (pracoviskoUcesy.getLastRadChange() != 0)
+            celkoveDlzkyRadov[1] += dlzkyRadov[1] / (getEndTime() + 1);
+        if (pracoviskoLicenie.getLastRadChange() != 0)
+            celkoveDlzkyRadov[2] += dlzkyRadov[2] / (getEndTime() + 1);
 
         for (int i = 0; i < statsVykonov.length; i++) {
             statsAllVykonov[i] += statsVykonov[i];
         }
+
+        pocetReplikacii++;
     }
 
     @Override
@@ -218,6 +228,14 @@ public class SalonSimulation extends EventCore {
         return radLicenie.size() + radUces.size();
     }
 
+    public int getPocetObsluhovanychRecepcia() {
+        return pocetObsluhovanychRecepcia;
+    }
+
+    public void incPocetObsluhovanychRecepcia(int dlzka) {
+        this.pocetObsluhovanychRecepcia += dlzka;
+    }
+
     public int getEndTime() {
         return endTime;
     }
@@ -246,41 +264,39 @@ public class SalonSimulation extends EventCore {
         return statsVykonov;
     }
 
-    public double getCasStravenyVSalone() {
-        return casStravenyVSalone;
+    public void addCas(int index, double cas) {
+        casy[index] += cas;
     }
 
-    public double getCelkovyCasVSalone() {
-        return celkovyCasVSalone;
+    public void addDlzkaRadu(int index, double dlzkaRadu) {
+        dlzkyRadov[index] += dlzkaRadu;
     }
 
-    public double getDlzkaCakaniaRecepcia() {
-        return dlzkaCakaniaRecepcia;
+    public double[] getDlzkyRadov() {
+        return dlzkyRadov;
     }
 
-    public double getCelkovaDlzkaCakaniaRecepcia() {
-        return celkovaDlzkaCakaniaRecepcia;
+    public double[] getCelkoveDlzkyRadov() {
+        return celkoveDlzkyRadov;
     }
 
-    public void addCasStravenyVSalone(double casStravenyVSalone) {
-        this.casStravenyVSalone += casStravenyVSalone;
+    public double[] getCasy() {
+        return casy;
     }
 
-    public void addDlzkaCakaniaRecepcia(double dlzkaCakaniaRecepcia) {
-        this.dlzkaCakaniaRecepcia += dlzkaCakaniaRecepcia;
+    public double[] getCelkoveCasy() {
+        return celkoveCasy;
     }
 
-    public void addDlzkaRaduRecepcia(double dlzkaRadu) {
-        dlzkaRaduRecepcia += dlzkaRadu;
+    public double[] getChikvadrat() {
+        return chikvadrat;
     }
 
-    public double getCelkovaDlzkaRaduRecepcia() {
-        return celkovaDlzkaRaduRecepcia;
+    public int getN() {
+        return n;
     }
 
-    public double getDlzkaRaduRecepcia() {
-        return dlzkaRaduRecepcia;
+    public void incN() {
+        this.n++;
     }
-
-
 }

@@ -6,6 +6,7 @@ public class Zamestnanec implements Comparable<Zamestnanec> {
     private Double zaciatokObsluhy = 0.0;
     private Double vyuzitie = 0.0;
     private boolean obsluhuje = false;
+    private int obsluhujeZakaznika = 0;
 
     Zamestnanec() {
 
@@ -41,6 +42,14 @@ public class Zamestnanec implements Comparable<Zamestnanec> {
 
     public void setVyuzitie(Double vyuzitie) {
         this.vyuzitie = vyuzitie;
+    }
+
+    public void setObsluhujeZakaznika(int obsluhujeZakaznika) {
+        this.obsluhujeZakaznika = obsluhujeZakaznika;
+    }
+
+    public int getObsluhujeZakaznika() {
+        return obsluhujeZakaznika;
     }
 
     @Override

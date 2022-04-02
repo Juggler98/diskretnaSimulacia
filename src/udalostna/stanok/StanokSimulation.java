@@ -22,6 +22,8 @@ public class StanokSimulation extends EventCore {
 
     private double celkovaDlzkaCakania = 0;
     private double celkovaDlzkaRadu = 0;
+
+    protected double poslednaZmenaRadu = 0;
     private int pocetReplikacii = 0;
 
     private int endTime;
@@ -63,7 +65,7 @@ public class StanokSimulation extends EventCore {
     @Override
     public void afterReplication() {
         celkovaDlzkaCakania += dlzkaCakania / pocetObsluzenych;
-        celkovaDlzkaRadu += dlzkaRadu / dlzkaCakania;
+        celkovaDlzkaRadu += dlzkaRadu / poslednaZmenaRadu;
         pocetReplikacii++;
     }
 

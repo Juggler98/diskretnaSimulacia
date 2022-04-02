@@ -3,15 +3,18 @@ package generators;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Random;
 
 public class RandTest {
 
     public static void main(String[] args) throws IOException {
+        main2();
+
         RandExponential randExponential = new RandExponential(240);
         RandUniformContinuous randUniformContinuous = new RandUniformContinuous(120, 240);
         RandUniformDiscrete randUniformDiscrete = new RandUniformDiscrete(30, 60);
         RandTriangular randTriangular = new RandTriangular(40, 150, 70);
-        EmpiricDiscrete[] empiricDiscretes = {new EmpiricDiscrete(30, 60, 0.2), new EmpiricDiscrete(61, 120, 0.3), new EmpiricDiscrete(121, 150, 0.5)};
+        EmpiricDiscrete[] empiricDiscretes = {new EmpiricDiscrete(50, 60, 0.2), new EmpiricDiscrete(61, 100, 0.3), new EmpiricDiscrete(101, 150, 0.5)};
         RandEmpiricDiscrete randEmpiricDiscrete = new RandEmpiricDiscrete(empiricDiscretes);
 
         BufferedWriter writer = new BufferedWriter(new FileWriter("exponential.txt"));
@@ -40,9 +43,9 @@ public class RandTest {
 
             valueInt = randEmpiricDiscrete.nextValue();
             writer5.write(valueInt + "\n");
-            if (valueInt < empiricDiscretes[1].getMin())
+            if (valueInt <= empiricDiscretes[0].getMax())
                 pocetEmpiricFirst++;
-            if (valueInt > empiricDiscretes[0].getMax() && valueInt < empiricDiscretes[2].getMin())
+            if (valueInt > empiricDiscretes[0].getMax() && valueInt < empiricDiscretes[1].getMax())
                 pocetEmpiricSecond++;
             if (valueInt > empiricDiscretes[1].getMax())
                 pocetEmpiricThird++;
@@ -56,6 +59,33 @@ public class RandTest {
         writer3.close();
         writer4.close();
         writer5.close();
+    }
+
+    public static void main2() {
+        Random seedGenerator = new Random();
+        final RandUniformDiscrete randUcesJednoduchy = new RandUniformDiscrete(10, 30, seedGenerator);
+        final EmpiricDiscrete[] empiricDiscretesUcesZlozity = {new EmpiricDiscrete(30, 60, 0.4), new EmpiricDiscrete(61, 120, 0.6)};
+        final RandEmpiricDiscrete randUcesZlozity = new RandEmpiricDiscrete(empiricDiscretesUcesZlozity, seedGenerator);
+        final EmpiricDiscrete[] empiricDiscretesUcesSvadobny = {new EmpiricDiscrete(50, 60, 0.2), new EmpiricDiscrete(61, 100, 0.3), new EmpiricDiscrete(101, 150, 0.5)};
+        final RandEmpiricDiscrete randUcesSvadobny = new RandEmpiricDiscrete(empiricDiscretesUcesSvadobny, seedGenerator);
+
+        double sum = 0;
+        int count = 100000;
+        for (int i = 0; i < count; i++) {
+            double percentage = seedGenerator.nextDouble();
+            double endTime;
+            if (percentage < 0.4) {
+                endTime = randUcesJednoduchy.nextValue();
+            } else if (percentage < 0.8) {
+                endTime = randUcesZlozity.nextValue();
+            } else {
+                endTime = randUcesSvadobny.nextValue();
+            }
+            endTime *= 60;
+            sum += endTime;
+        }
+        System.out.println(sum / count / 60 / 60);
+
     }
 
 }

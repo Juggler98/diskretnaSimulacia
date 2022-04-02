@@ -1,4 +1,4 @@
-package monteCarloParking;
+package charts;
 
 import org.jfree.chart.ui.ApplicationFrame;
 

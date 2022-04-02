@@ -14,17 +14,23 @@ public abstract class EventMethod {
         if (!rad.isEmpty() && pracovisko.jeNiektoVolny()) {
             ZakaznikSalonu zakaznikSalonu = rad.poll();
             Event event = null;
+            int radIndex = 0;
             switch (eventStartType) {
                 case UCES:
-                    event = new EventUcesStart(zakaznikSalonu, time, salonSimulation);
+                    radIndex = 1;
+                    event = new EventUcesStart(zakaznikSalonu, time, salonSimulation, pracovisko.obsadZamestnanca());
                     break;
                 case LICENIE:
-                    event = new EventLicenieStart(zakaznikSalonu, time, salonSimulation);
+                    radIndex = 2;
+                    event = new EventLicenieStart(zakaznikSalonu, time, salonSimulation, pracovisko.obsadZamestnanca());
                     break;
                 case RECEPCIA:
-                    event = new EventRecepciaStart(zakaznikSalonu, time, salonSimulation);
+                    radIndex = 0;
+                    event = new EventRecepciaStart(zakaznikSalonu, time, salonSimulation, pracovisko.obsadZamestnanca());
                     break;
             }
+            salonSimulation.addDlzkaRadu(radIndex,(rad.size() + 1) * (time - pracovisko.getLastRadChange()));
+            pracovisko.setLastRadChange(time);
             salonSimulation.addToKalendar(event);
             return true;
         }
@@ -36,29 +42,35 @@ public abstract class EventMethod {
             Event event = null;
             switch (eventStartType) {
                 case UCES:
-                    event = new EventUcesStart(zakaznikSalonu, time, salonSimulation);
+                    event = new EventUcesStart(zakaznikSalonu, time, salonSimulation, pracovisko.obsadZamestnanca());
                     break;
                 case LICENIE:
-                    event = new EventLicenieStart(zakaznikSalonu, time, salonSimulation);
+                    event = new EventLicenieStart(zakaznikSalonu, time, salonSimulation, pracovisko.obsadZamestnanca());
                     break;
                 case RECEPCIA:
-                    event = new EventRecepciaStart(zakaznikSalonu, time, salonSimulation);
+                    event = new EventRecepciaStart(zakaznikSalonu, time, salonSimulation, pracovisko.obsadZamestnanca());
                     break;
             }
             salonSimulation.addToKalendar(event);
         } else {
-            rad.add(zakaznikSalonu);
+            int radIndex = 0;
             switch (eventStartType) {
                 case UCES:
+                    radIndex = 1;
                     zakaznikSalonu.setStavZakaznika(StavZakaznika.RADUCES);
                     break;
                 case LICENIE:
+                    radIndex = 2;
                     zakaznikSalonu.setStavZakaznika(StavZakaznika.RADLICENIE);
                     break;
                 case RECEPCIA:
+                    radIndex = 0;
                     zakaznikSalonu.setStavZakaznika(StavZakaznika.RADRECEPCIA);
                     break;
             }
+            salonSimulation.addDlzkaRadu(radIndex, rad.size() * (time - pracovisko.getLastRadChange()));
+            pracovisko.setLastRadChange(time);
+            rad.add(zakaznikSalonu);
         }
     }
 

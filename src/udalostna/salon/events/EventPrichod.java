@@ -3,6 +3,7 @@ package udalostna.salon.events;
 import simCores.EventCore;
 import udalostna.Event;
 import udalostna.salon.SalonSimulation;
+import udalostna.salon.pracoviska.Zamestnanec;
 import udalostna.salon.zakaznik.StavZakaznika;
 import udalostna.salon.zakaznik.ZakaznikSalonu;
 
@@ -19,22 +20,20 @@ public class EventPrichod extends Event {
 
     @Override
     public void vykonaj() {
-        if (salonSimulation.getRadRecepcia().isEmpty() && salonSimulation.getPracoviskoRecepcia().jeNiektoVolny() && salonSimulation.getDlzkaRaduUcesyLicenie() <= 10) {
-            EventRecepciaStart zaciatokRecepcie = new EventRecepciaStart(this.zakaznikSalonu, this.getTime(), salonSimulation);
-            salonSimulation.addToKalendar(zaciatokRecepcie);
+        if (salonSimulation.getDlzkaRaduUcesyLicenie() + salonSimulation.getPocetObsluhovanychRecepcia() <= 10) {
+            EventMethod.obsluhaOrRad(salonSimulation, salonSimulation.getRadRecepcia(), salonSimulation.getPracoviskoRecepcia(), EventStartType.RECEPCIA, this.getTime(), zakaznikSalonu);
         } else {
+            salonSimulation.addDlzkaRadu(0, salonSimulation.getRadRecepcia().size() * (getTime() - salonSimulation.getPracoviskoRecepcia().getLastRadChange()));
+            salonSimulation.getPracoviskoRecepcia().setLastRadChange(getTime());
             salonSimulation.getRadRecepcia().add(this.zakaznikSalonu);
             zakaznikSalonu.setStavZakaznika(StavZakaznika.RADRECEPCIA);
         }
-        ZakaznikSalonu zakaznikSalonu = new ZakaznikSalonu(this.getTime() + salonSimulation.getRandPrichod().nextValue());
+        ZakaznikSalonu zakaznikSalonu = new ZakaznikSalonu(this.getTime() + salonSimulation.getRandPrichod().nextValue(), salonSimulation.getZakaznici().size() + 1);
         if (zakaznikSalonu.getCasPrichodu() <= salonSimulation.getEndTime()) {
             zakaznikSalonu.setStavZakaznika(StavZakaznika.PRICHOD);
             salonSimulation.getZakaznici().add(zakaznikSalonu);
             EventPrichod prichod = new EventPrichod(zakaznikSalonu, zakaznikSalonu.getCasPrichodu(), salonSimulation);
             salonSimulation.addToKalendar(prichod);
-        } else {
-            EventZatvorenie zatvorenie = new EventZatvorenie(salonSimulation.getEndTime(), salonSimulation);
-            salonSimulation.addToKalendar(zatvorenie);
         }
     }
 

@@ -19,6 +19,8 @@ public class EventPrichod extends Event implements Comparable<Event> {
 //        System.out.println("Prichod: " + time);
 //        System.out.println(zakaznik);
         if (stanokSimulation.obsluhaPrebieha) {
+            stanokSimulation.dlzkaRadu += (getTime() - stanokSimulation.poslednaZmenaRadu) * stanokSimulation.rad.size();
+            stanokSimulation.poslednaZmenaRadu = getTime();
             stanokSimulation.rad.add(this.zakaznikStanku);
         } else {
             EventZaciatok zaciatok = new EventZaciatok(this.zakaznikStanku, this.getTime(), stanokSimulation);

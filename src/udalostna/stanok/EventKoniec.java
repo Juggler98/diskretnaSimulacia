@@ -20,7 +20,10 @@ public class EventKoniec extends Event {
 //        System.out.println(zakaznik);
         if (!stanokSimulation.rad.isEmpty()) {
             EventZaciatok zaciatok = new EventZaciatok(stanokSimulation.rad.poll(), this.getTime(), stanokSimulation);
-            stanokSimulation.dlzkaRadu += zakaznikStanku.getCasCakania() * stanokSimulation.rad.size();
+
+            stanokSimulation.dlzkaRadu += (getTime() - stanokSimulation.poslednaZmenaRadu) * (stanokSimulation.rad.size() + 1);
+            stanokSimulation.poslednaZmenaRadu = getTime();
+
             stanokSimulation.addToKalendar(zaciatok);
             stanokSimulation.obsluhaPrebieha = true;
         } else {
