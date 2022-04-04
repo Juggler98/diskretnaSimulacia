@@ -46,16 +46,16 @@ public class SalonSimulation extends EventCore {
 
     private final int[] statsVykonov = new int[10];
     private final double[] statsAllVykonov = new double[10];
-    private final String[] statsNames = {"Zadané účesy", "Spravené účesy", "Zadané Líčenia", "Spravené Líčenia", "Zadané účesy aj líčenia", "Spravené účesy aj líčenia", "Zadané čistenia", "Spravené čistenia", "Zadané objednávky", "Dokončené objednávky", "Čas na objednávku", "Čas v sálone", "Čas účesu"};
+    private final String[] statsNames = {"Zadané účesy", "Spravené účesy", "Zadané Líčenia", "Spravené Líčenia", "Zadané účesy aj líčenia", "Spravené účesy aj líčenia", "Zadané čistenia", "Spravené čistenia", "Zadané objednávky", "Dokončené objednávky", "Čas na objednávku", "Čas v sálone", "Čas účesu", "Po zatvorení ešte"};
 
-    private final double[] casy = new double[5]; //casStravenyVSalone, dlzkaCakaniaNaObjednavku, robenieUcesov
+    private final double[] casy = new double[5]; //casStravenyVSalone, dlzkaCakaniaNaObjednavku, robenieUcesov, poOtvaracejDobe
     private final double[] celkoveCasy = new double[5];
 
     private final double[] dlzkyRadov = new double[3]; //recepcia, ucesy, licenie
     private final double[] celkoveDlzkyRadov = new double[3];
 
-    private final double[] chikvadrat = new double[2];
-    private int n = 0;
+    private final double[] xI = new double[2];
+    private double xAvg = 0;
 
     private final int pocetRecepcnych;
     private final int pocetKadernicok;
@@ -85,6 +85,8 @@ public class SalonSimulation extends EventCore {
         Arrays.fill(statsVykonov, 0);
         Arrays.fill(casy, 0);
         Arrays.fill(dlzkyRadov, 0);
+
+        xAvg = 0;
 
         pocetObsluhovanychRecepcia = 0;
 
@@ -125,17 +127,18 @@ public class SalonSimulation extends EventCore {
         celkoveCasy[0] += casy[0] / statsVykonov[9];
         celkoveCasy[1] += casy[1] / statsVykonov[9];
         celkoveCasy[2] += casy[2] / (statsVykonov[0] + statsVykonov[4]);
+        celkoveCasy[3] += getSimTime() - getEndTime();
 
-        if (pracoviskoRecepcia.getLastRadChange() != 0)
-            celkoveDlzkyRadov[0] += dlzkyRadov[0] / (getEndTime() + 1);
-        if (pracoviskoUcesy.getLastRadChange() != 0)
-            celkoveDlzkyRadov[1] += dlzkyRadov[1] / (getEndTime() + 1);
-        if (pracoviskoLicenie.getLastRadChange() != 0)
-            celkoveDlzkyRadov[2] += dlzkyRadov[2] / (getEndTime() + 1);
+        celkoveDlzkyRadov[0] += dlzkyRadov[0] / (getEndTime() + 1);
+        celkoveDlzkyRadov[1] += dlzkyRadov[1] / (getEndTime() + 1);
+        celkoveDlzkyRadov[2] += dlzkyRadov[2] / (getEndTime() + 1);
 
         for (int i = 0; i < statsVykonov.length; i++) {
             statsAllVykonov[i] += statsVykonov[i];
         }
+
+        xI[0] += Math.pow(xAvg / statsVykonov[9], 2);
+        xI[1] += xAvg / statsVykonov[9];
 
         pocetReplikacii++;
     }
@@ -288,15 +291,12 @@ public class SalonSimulation extends EventCore {
         return celkoveCasy;
     }
 
-    public double[] getChikvadrat() {
-        return chikvadrat;
+    public double[] getxI() {
+        return xI;
     }
 
-    public int getN() {
-        return n;
+    public void addXAvg(double xAvg) {
+        this.xAvg += xAvg;
     }
 
-    public void incN() {
-        this.n++;
-    }
 }

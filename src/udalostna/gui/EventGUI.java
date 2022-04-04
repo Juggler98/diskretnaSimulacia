@@ -21,7 +21,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
 
     private final JLabel resultLabel;
     private final JLabel replicationLabel;
-    private final JLabel chikvadratLabel;
+    private final JLabel intervalSpolahlivostiLabel;
     private final JButton start;
     private final JButton pause;
     private final JButton stop;
@@ -76,10 +76,10 @@ public class EventGUI extends JFrame implements ISimDelegate {
 
         resultLabel = new JLabel();
         replicationLabel = new JLabel();
-        chikvadratLabel = new JLabel();
+        intervalSpolahlivostiLabel = new JLabel();
         JLabel resultLabelHint = new JLabel("Simulačný čas:");
         JLabel replicationLabelHint = new JLabel("Replikácia č.:");
-        JLabel chikvadratLabelHint = new JLabel("90% interval spoľahlivosti času v salóne:");
+        JLabel intervalSpolahlivostiLabelHint = new JLabel("90% interval spoľahlivosti času v salóne:");
 
         pocetOpakovani.setToolTipText("Pocet opakovani");
         zamestnanciField[0].setToolTipText("Recepcne");
@@ -116,10 +116,10 @@ public class EventGUI extends JFrame implements ISimDelegate {
             }
         }
 
-        for (int i = 0; i < tables.length; i++) {
-            tables[i].setDefaultRenderer(String.class, centerRenderer);
-            tables[i].setDefaultRenderer(Integer.class, centerRenderer);
-            tables[i].setDefaultRenderer(Double.class, centerRenderer);
+        for (JTable table : tables) {
+            table.setDefaultRenderer(String.class, centerRenderer);
+            table.setDefaultRenderer(Integer.class, centerRenderer);
+            table.setDefaultRenderer(Double.class, centerRenderer);
         }
 
 
@@ -173,6 +173,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
                 }
                 tables[3].setModel(new DefaultTableModel(tableData2, new String[]{"Názov", "Hodnota", "Priemerná hodnota"}));
                 tables[3].getColumnModel().getColumn(0).setPreferredWidth(buttonWidth * 2);
+                tables[3].getColumnModel().getColumn(2).setPreferredWidth(buttonWidth * 2 - 20);
 
                 salonSimulation.registerDelegate(this);
                 salonSimulation.setSleepTime(sleepTime);
@@ -251,12 +252,12 @@ public class EventGUI extends JFrame implements ISimDelegate {
         resultLabel.setBounds((width / 4) - (buttonWidth / 2) + buttonWidth + 20, space + buttonHeight + 1, buttonWidth * 2, buttonHeight);
         replicationLabelHint.setBounds((width / 4) - (buttonWidth / 2), space + 1, buttonWidth + 20, buttonHeight);
         replicationLabel.setBounds((width / 4) - (buttonWidth / 2) + buttonWidth + 20, space + 1, buttonWidth * 2, buttonHeight);
-        chikvadratLabelHint.setBounds(space, height - buttonHeight - 60, buttonWidth + 140, buttonHeight);
-        chikvadratLabel.setBounds(space + buttonWidth + 140, height - buttonHeight - 60, buttonWidth * 2, buttonHeight);
+        intervalSpolahlivostiLabelHint.setBounds(space, height - buttonHeight - 60, buttonWidth + 160, buttonHeight);
+        intervalSpolahlivostiLabel.setBounds(space + buttonWidth + 160, height - buttonHeight - 60, buttonWidth * 2, buttonHeight);
         tablesScrollPane[0].setBounds(space, space + buttonHeight * 5, 480, 72);
         tablesScrollPane[1].setBounds(space, space * 4 + buttonHeight * 5 + 72, 480, 232);
         tablesScrollPane[2].setBounds(space, space * 8 + buttonHeight * 5 + 72 + 232, 840, 300);
-        tablesScrollPane[3].setBounds(space * 4 + 480, space + buttonHeight * 5, 360, 232);
+        tablesScrollPane[3].setBounds(space * 4 + 480, space + buttonHeight * 5, 360, 248);
 
         panel.add(pocetOpakovani);
         panel.add(start);
@@ -270,10 +271,10 @@ public class EventGUI extends JFrame implements ISimDelegate {
         }
         panel.add(resultLabel);
         panel.add(replicationLabel);
-        panel.add(chikvadratLabel);
+        panel.add(intervalSpolahlivostiLabel);
         panel.add(resultLabelHint);
         panel.add(replicationLabelHint);
-        panel.add(chikvadratLabelHint);
+        panel.add(intervalSpolahlivostiLabelHint);
 
         setContentPane(panel);
 
@@ -300,7 +301,6 @@ public class EventGUI extends JFrame implements ISimDelegate {
     }
 
     private void graf() {
-        this.iterationCount = Integer.parseInt(pocetOpakovani.getText());
         int kadernicky = Integer.parseInt(zamestnanciField[1].getText());
         int kozmeticky = Integer.parseInt(zamestnanciField[2].getText());
         LineChart lineChart = new LineChart(String.format("%d Kaderníčok, %d Kozmetičiek", kadernicky, kozmeticky), "Recepčné", "Priemerná dĺžka radu");
@@ -309,7 +309,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
         lineChart.setVisible(true);
         for (int recepcne = 1; recepcne <= 10; recepcne++) {
             SalonSimulation salonSimulation = new SalonSimulation((17 - 9) * 3600, recepcne, kadernicky, kozmeticky);
-            salonSimulation.simulate(iterationCount);
+            salonSimulation.simulate(Integer.parseInt(pocetOpakovani.getText()));
             lineChart.addPoint(recepcne, salonSimulation.getCelkoveDlzkyRadov()[0] / salonSimulation.getPocetReplikacii());
         }
     }
@@ -321,7 +321,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
             for (int j = 1; j <= 10; j++) {
                 for (int k = 1; k <= 10; k++) {
                     SalonSimulation salonSimulation = new SalonSimulation((17 - 9) * 3600, i, j, k);
-                    salonSimulation.simulate(100);
+                    salonSimulation.simulate(Integer.parseInt(pocetOpakovani.getText()));
                     if (salonSimulation.getCelkoveCasy()[0] / 3600 / salonSimulation.getPocetReplikacii() <= 3 && salonSimulation.getCelkoveCasy()[1] / 60 / salonSimulation.getPocetReplikacii() <= 4) {
                         if (i + j + k < min) {
                             min = i + j + k;
@@ -347,10 +347,13 @@ public class EventGUI extends JFrame implements ISimDelegate {
 
         if (salonSimulation.getSleepTime() != 0 || !salonSimulation.isRun()) {
             resultLabel.setText(getTime((int) eventCore.getSimTime(), 9));
-            double s = Math.sqrt((1.0 / (salonSimulation.getN() - 1) * salonSimulation.getChikvadrat()[0]) - (1.0 / (salonSimulation.getN() - 1) * salonSimulation.getChikvadrat()[1]));
-            double start = salonSimulation.getChikvadrat()[1] / salonSimulation.getN() - s * 1.96 / Math.sqrt(salonSimulation.getN());
-            double end = salonSimulation.getChikvadrat()[1] / salonSimulation.getN() + s * 1.96 / Math.sqrt(salonSimulation.getN());
-            chikvadratLabel.setText(String.format("<%s, %s>", getTime((int) start, 0), getTime((int) end, 0)));
+            if (salonSimulation.getPocetReplikacii() > 30) {
+                double s = Math.sqrt((1.0 / (salonSimulation.getPocetReplikacii() - 1) * salonSimulation.getxI()[0]) - (1.0 / (salonSimulation.getPocetReplikacii() - 1) * salonSimulation.getxI()[1]));
+                double start = salonSimulation.getxI()[1] / salonSimulation.getPocetReplikacii() - s * 1.645 / Math.sqrt(salonSimulation.getPocetReplikacii());
+                double end = salonSimulation.getxI()[1] / salonSimulation.getPocetReplikacii() + s * 1.645 / Math.sqrt(salonSimulation.getPocetReplikacii());
+                intervalSpolahlivostiLabel.setText(String.format("<%s, %s>", getTime((int) start, 0), getTime((int) end, 0)));
+            }
+
 
             tables[0].getModel().setValueAt(salonSimulation.getRadRecepcia().size(), 0, 1);
             tables[0].getModel().setValueAt(salonSimulation.getRadUces().size(), 1, 1);
@@ -413,7 +416,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
                 }
             }
 
-            for (int i = 0; i < salonSimulation.getStatsNames().length - 3; i++) {
+            for (int i = 0; i < salonSimulation.getStatsNames().length - 4; i++) {
                 tables[3].getModel().setValueAt(salonSimulation.getStatsVykonov()[i], i, 1);
                 tables[3].getModel().setValueAt(salonSimulation.getStatsAllVykonov()[i] / salonSimulation.getPocetReplikacii(), i, 2);
             }
@@ -425,6 +428,8 @@ public class EventGUI extends JFrame implements ISimDelegate {
 
             tables[3].getModel().setValueAt(getTime((int) (salonSimulation.getCasy()[2] / (salonSimulation.getStatsVykonov()[0] + salonSimulation.getStatsVykonov()[4])), 0), 12, 1);
             tables[3].getModel().setValueAt(getTime((int) (salonSimulation.getCelkoveCasy()[2] / salonSimulation.getPocetReplikacii()), 0), 12, 2);
+
+            tables[3].getModel().setValueAt(getTime((int) (salonSimulation.getCelkoveCasy()[3] / salonSimulation.getPocetReplikacii()), 0), 13, 2);
 
         }
     }

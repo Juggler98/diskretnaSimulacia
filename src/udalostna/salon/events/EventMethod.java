@@ -29,8 +29,10 @@ public abstract class EventMethod {
                     event = new EventRecepciaStart(zakaznikSalonu, time, salonSimulation, pracovisko.obsadZamestnanca());
                     break;
             }
-            salonSimulation.addDlzkaRadu(radIndex,(rad.size() + 1) * (time - pracovisko.getLastRadChange()));
-            pracovisko.setLastRadChange(time);
+            if (time <= salonSimulation.getEndTime()) {
+                salonSimulation.addDlzkaRadu(radIndex, (rad.size() + 1) * (time - pracovisko.getLastRadChange()));
+                pracovisko.setLastRadChange(time);
+            }
             salonSimulation.addToKalendar(event);
             return true;
         }
@@ -68,8 +70,10 @@ public abstract class EventMethod {
                     zakaznikSalonu.setStavZakaznika(StavZakaznika.RADRECEPCIA);
                     break;
             }
-            salonSimulation.addDlzkaRadu(radIndex, rad.size() * (time - pracovisko.getLastRadChange()));
-            pracovisko.setLastRadChange(time);
+            if (time <= salonSimulation.getEndTime()) {
+                salonSimulation.addDlzkaRadu(radIndex, rad.size() * (time - pracovisko.getLastRadChange()));
+                pracovisko.setLastRadChange(time);
+            }
             rad.add(zakaznikSalonu);
         }
     }
