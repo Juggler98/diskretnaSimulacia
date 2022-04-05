@@ -12,6 +12,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class EventGUI extends JFrame implements ISimDelegate {
@@ -314,14 +317,21 @@ public class EventGUI extends JFrame implements ISimDelegate {
         }
     }
 
-    private void test() {
+    private void test() throws IOException {
         int min = Integer.MAX_VALUE;
         String solution = "";
+        BufferedWriter writer = new BufferedWriter(new FileWriter("resultData.txt"));
+        writer.write("Recepcne,Kadernicky,Kozmeticky,Cas na objednavku (min),Cas v salone (hod)\n");
         for (int i = 1; i <= 10; i++) {
             for (int j = 1; j <= 10; j++) {
                 for (int k = 1; k <= 10; k++) {
                     SalonSimulation salonSimulation = new SalonSimulation((17 - 9) * 3600, i, j, k);
                     salonSimulation.simulate(Integer.parseInt(pocetOpakovani.getText()));
+//                    System.out.println(i + "," + j + "," + k);
+//                    System.out.println(salonSimulation.getCelkoveCasy()[0] / 3600 / salonSimulation.getPocetReplikacii());
+//                    System.out.println(salonSimulation.getCelkoveCasy()[1] / 60 / salonSimulation.getPocetReplikacii());
+//                    System.out.println();
+                    writer.write(i + "," + j + "," + k + "," + salonSimulation.getCelkoveCasy()[0] / 3600 / salonSimulation.getPocetReplikacii() + "," + salonSimulation.getCelkoveCasy()[1] / 60 / salonSimulation.getPocetReplikacii() +"\n");
                     if (salonSimulation.getCelkoveCasy()[0] / 3600 / salonSimulation.getPocetReplikacii() <= 3 && salonSimulation.getCelkoveCasy()[1] / 60 / salonSimulation.getPocetReplikacii() <= 4) {
                         if (i + j + k < min) {
                             min = i + j + k;
@@ -333,6 +343,7 @@ public class EventGUI extends JFrame implements ISimDelegate {
                 }
             }
         }
+        writer.close();
         JOptionPane.showMessageDialog(null, "Best solutions: " + solution);
     }
 
@@ -453,7 +464,11 @@ public class EventGUI extends JFrame implements ISimDelegate {
     private class TestThread extends Thread {
         @Override
         public void run() {
-            test();
+            try {
+                test();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
